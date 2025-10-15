@@ -14,7 +14,7 @@ public interface OfertaMapper {
             @Mapping(source = "concesionaria.id", target = "concesionariaId"),
             @Mapping(target = "titulo", ignore = true),
             @Mapping(target = "descripcion", ignore = true),
-            @Mapping(source = "precioActual", target = "precio", qualifiedByName = {}),
+            @Mapping(source = "precioActual", target = "precio"),
             @Mapping(target = "estado", ignore = true)
     })
     OfertaResponse toResponse(OfertaAuto entity);

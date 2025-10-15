@@ -11,8 +11,6 @@ import java.util.Optional;
 
 @Repository
 public interface OfertaAutoRepository extends JpaRepository<OfertaAuto, Long> {
-    Optional<OfertaAuto> findByConcesionariaAndAuto(Concesionaria concesionaria, Auto auto);
-    boolean existsByConcesionariaAndAuto(Concesionaria concesionaria, Auto auto);
     List<OfertaAuto> findByConcesionariaId(Long concesionariaId);
     List<OfertaAuto> findByAutoId(Long autoId);
 }

@@ -71,7 +71,7 @@ class FavoritoServiceTest {
         usuario.setNombre("Ana");
         usuario.setApellido("García");
         usuario.setActivo(true);
-        usuario = (UsuarioComprador) usuarioRepository.save(usuario);
+        usuario = usuarioRepository.save(usuario);
 
         // Crear concesionaria
         Concesionaria concesionaria = Concesionaria.builder()

@@ -41,8 +41,7 @@ public class UsuarioController {
     public ResponseEntity<FavoritoResponse> getFavorito(@PathVariable("usuarioId") @NotNull Long usuarioId) {
         try {
             var favoritoOpt = favoritoService.obtenerPorUsuario(usuarioId);
-            if (favoritoOpt.isEmpty()) return ResponseEntity.noContent().build();
-            return ResponseEntity.ok(favoritoMapper.toResponse(favoritoOpt.get()));
+            return favoritoOpt.map(favorito -> ResponseEntity.ok(favoritoMapper.toResponse(favorito))).orElseGet(() -> ResponseEntity.noContent().build());
         } catch (IllegalArgumentException e) {
             return ResponseEntity.notFound().build();
         }

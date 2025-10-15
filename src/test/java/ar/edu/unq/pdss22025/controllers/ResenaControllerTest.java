@@ -13,7 +13,6 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import java.util.List;
-import java.util.Optional;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -29,7 +28,6 @@ class ResenaControllerTest {
 
     @Test
     void crearResena_ok() throws Exception {
-        CrearResenaRequest request = new CrearResenaRequest();
         Resena resena = new Resena();
         ResenaResponse response = new ResenaResponse();
         Mockito.when(resenaService.crear(Mockito.any())).thenReturn(resena);

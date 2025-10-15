@@ -44,7 +44,7 @@ public class Concesionaria {
     @Column(name = "email", length = 320)
     private String email;
 
-    @Column(name = "direccion", length = 255)
+    @Column(name = "direccion")
     private String direccion;
 
     // Relación uno a uno con Usuario (inversa)

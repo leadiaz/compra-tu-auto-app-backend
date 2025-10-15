@@ -11,10 +11,7 @@ import java.util.List;
 
 @Repository
 public interface ResenaRepository extends JpaRepository<Resena, Long> {
-    List<Resena> findByUsuario(Usuario usuario);
-    
+
     @Query("SELECT r FROM Resena r WHERE r.auto = :auto ORDER BY r.createdAt DESC")
     List<Resena> findByAutoOrderByCreatedAtDesc(Auto auto);
-    
-    List<Resena> findByAuto(Auto auto);
 }
