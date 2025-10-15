@@ -1,20 +1,23 @@
 package ar.edu.unq.pdss22025.models;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.OffsetDateTime;
-import java.util.ArrayList;
-import java.util.List;
 
 @Entity
-@Table(name = "concesionaria", indexes = {
-        @Index(name = "ux_concesionaria_cuit", columnList = "cuit", unique = true)
-})
+@Table(name = "favorito",
+        uniqueConstraints = {
+                @UniqueConstraint(name = "uk_favorito_usuario", columnNames = {"usuario_id"})
+        },
+        indexes = {
+                @Index(name = "idx_favorito_oferta", columnList = "oferta_id")
+        }
+)
 @Getter
 @Setter
 @Builder
@@ -22,7 +25,7 @@ import java.util.List;
 @AllArgsConstructor
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @EntityListeners(AuditingEntityListener.class)
-public class Concesionaria {
+public class Favorito {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -30,39 +33,20 @@ public class Concesionaria {
     @EqualsAndHashCode.Include
     private Long id;
 
-    @NotBlank
-    @Column(name = "nombre", nullable = false, length = 150)
-    private String nombre;
-
-    @NotBlank
-    @Column(name = "cuit", nullable = false, length = 20)
-    private String cuit;
-
-    @Column(name = "telefono", length = 30)
-    private String telefono;
-
-    @Column(name = "email", length = 320)
-    private String email;
-
-    @Column(name = "direccion", length = 255)
-    private String direccion;
-
-    // Relación uno a uno con Usuario (inversa)
-    @OneToOne(mappedBy = "concesionaria")
+    @OneToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "usuario_id", nullable = false, unique = true, foreignKey = @ForeignKey(name = "fk_favorito_usuario"))
     private Usuario usuario;
 
-    @Builder.Default
-    @Column(name = "activa", nullable = false)
-    private Boolean activa = Boolean.TRUE;
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "oferta_id", nullable = false, foreignKey = @ForeignKey(name = "fk_favorito_oferta"))
+    private OfertaAuto oferta;
 
-    @Builder.Default
-    @OneToMany(mappedBy = "concesionaria", fetch = FetchType.LAZY)
-    private List<OfertaAuto> ofertas = new ArrayList<>();
-
+    @NotNull
     @CreatedDate
     @Column(name = "created_at", nullable = false, updatable = false)
     private OffsetDateTime createdAt;
 
+    @NotNull
     @LastModifiedDate
     @Column(name = "updated_at", nullable = false)
     private OffsetDateTime updatedAt;
