@@ -12,16 +12,16 @@ public class UsuarioResponse {
     private String apellido;
     private LocalDateTime fechaAlta;
     private Boolean activo;
-    private String rolNombre;
-    
+    private String tipoUsuario;
+
     public UsuarioResponse(Long id, String email, String nombre, String apellido, 
-                          LocalDateTime fechaAlta, Boolean activo, String rolNombre) {
+                          LocalDateTime fechaAlta, Boolean activo, String tipoUsuario) {
         this.id = id;
         this.email = email;
         this.nombre = nombre;
         this.apellido = apellido;
         this.fechaAlta = fechaAlta;
         this.activo = activo;
-        this.rolNombre = rolNombre;
+        this.tipoUsuario = tipoUsuario;
     }
 }
