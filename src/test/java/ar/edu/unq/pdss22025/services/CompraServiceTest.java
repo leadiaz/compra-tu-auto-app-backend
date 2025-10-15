@@ -6,7 +6,6 @@ import ar.edu.unq.pdss22025.models.UsuarioComprador;
 import ar.edu.unq.pdss22025.models.Auto;
 import ar.edu.unq.pdss22025.models.Concesionaria;
 import ar.edu.unq.pdss22025.models.dto.CrearCompraRequest;
-import ar.edu.unq.pdss22025.repositories.CompraRepository;
 import ar.edu.unq.pdss22025.repositories.OfertaAutoRepository;
 import ar.edu.unq.pdss22025.repositories.UsuarioRepository;
 import ar.edu.unq.pdss22025.repositories.AutoRepository;
@@ -64,7 +63,7 @@ class CompraServiceTest {
         comprador.setNombre("Juan");
         comprador.setApellido("Pérez");
         comprador.setActivo(true);
-        comprador = (UsuarioComprador) usuarioRepository.save(comprador);
+        comprador = usuarioRepository.save(comprador);
 
         // Crear concesionaria
         Concesionaria concesionaria = Concesionaria.builder()

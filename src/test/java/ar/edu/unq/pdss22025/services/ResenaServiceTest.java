@@ -4,7 +4,6 @@ import ar.edu.unq.pdss22025.models.Resena;
 import ar.edu.unq.pdss22025.models.UsuarioComprador;
 import ar.edu.unq.pdss22025.models.Auto;
 import ar.edu.unq.pdss22025.models.dto.CrearResenaRequest;
-import ar.edu.unq.pdss22025.repositories.ResenaRepository;
 import ar.edu.unq.pdss22025.repositories.UsuarioRepository;
 import ar.edu.unq.pdss22025.repositories.AutoRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -55,7 +54,7 @@ class ResenaServiceTest {
         usuario1.setNombre("Ana");
         usuario1.setApellido("García");
         usuario1.setActivo(true);
-        usuario1 = (UsuarioComprador) usuarioRepository.save(usuario1);
+        usuario1 = usuarioRepository.save(usuario1);
 
         usuario2 = new UsuarioComprador();
         usuario2.setEmail("usuario2@test.com");
@@ -63,7 +62,7 @@ class ResenaServiceTest {
         usuario2.setNombre("Carlos");
         usuario2.setApellido("López");
         usuario2.setActivo(true);
-        usuario2 = (UsuarioComprador) usuarioRepository.save(usuario2);
+        usuario2 = usuarioRepository.save(usuario2);
 
         // Crear auto
         auto = Auto.builder()
