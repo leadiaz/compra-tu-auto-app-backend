@@ -2,7 +2,7 @@ package ar.edu.unq.pdss22025.controllers;
 
 import ar.edu.unq.pdss22025.mapper.CompraMapper;
 import ar.edu.unq.pdss22025.models.Compra;
-import ar.edu.unq.pdss22025.models.Usuario;
+import ar.edu.unq.pdss22025.models.usuario.Usuario;
 import ar.edu.unq.pdss22025.models.dto.CompraResponse;
 import ar.edu.unq.pdss22025.models.dto.FavoritoResponse;
 import ar.edu.unq.pdss22025.models.Favorito;
@@ -51,7 +51,7 @@ class UsuarioControllerTest {
         FavoritoResponse response = new FavoritoResponse();
         Mockito.when(favoritoService.definirFavorito(anyLong(), anyLong())).thenReturn(favorito);
         Mockito.when(favoritoMapper.toResponse(favorito)).thenReturn(response);
-        mockMvc.perform(put("/api/usuarios/1/favorito/2")
+        mockMvc.perform(put("/usuarios/1/favorito/2")
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
     }
@@ -59,7 +59,7 @@ class UsuarioControllerTest {
     @Test
     void setFavorito_notFound() throws Exception {
         Mockito.when(favoritoService.definirFavorito(anyLong(), anyLong())).thenThrow(new IllegalArgumentException());
-        mockMvc.perform(put("/api/usuarios/1/favorito/2")
+        mockMvc.perform(put("/usuarios/1/favorito/2")
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound());
     }
@@ -67,7 +67,7 @@ class UsuarioControllerTest {
     @Test
     void setFavorito_unprocessableEntity() throws Exception {
         Mockito.when(favoritoService.definirFavorito(anyLong(), anyLong())).thenThrow(new IllegalStateException());
-        mockMvc.perform(put("/api/usuarios/1/favorito/2")
+        mockMvc.perform(put("/usuarios/1/favorito/2")
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isUnprocessableEntity());
     }
@@ -79,7 +79,7 @@ class UsuarioControllerTest {
         Mockito.when(favoritoService.obtenerPorUsuario(1L)).thenReturn(Optional.of(favorito));
         Mockito.when(favoritoMapper.toResponse(favorito)).thenReturn(response);
         mockMvc.perform(
-                get("/api/usuarios/1/favorito")
+                get("/usuarios/1/favorito")
         ).andExpect(status().isOk());
     }
 
@@ -87,7 +87,7 @@ class UsuarioControllerTest {
     void getFavorito_noContent() throws Exception {
         Mockito.when(favoritoService.obtenerPorUsuario(1L)).thenReturn(Optional.empty());
         mockMvc.perform(
-                get("/api/usuarios/1/favorito")
+                get("/usuarios/1/favorito")
         ).andExpect(status().isNoContent());
     }
 
@@ -95,7 +95,7 @@ class UsuarioControllerTest {
     void getFavorito_notFound() throws Exception {
         Mockito.when(favoritoService.obtenerPorUsuario(1L)).thenThrow(new IllegalArgumentException());
         mockMvc.perform(
-                get("/api/usuarios/1/favorito")
+                get("/usuarios/1/favorito")
         ).andExpect(status().isNotFound());
     }
 
@@ -106,7 +106,7 @@ class UsuarioControllerTest {
         Mockito.when(compraService.listarPorCompradorId(1L)).thenReturn(List.of(compra));
         Mockito.when(compraMapper.toResponse(compra)).thenReturn(compraResponse);
         mockMvc.perform(
-                get("/api/usuarios/1/compras")
+                get("/usuarios/1/compras")
         ).andExpect(status().isOk());
     }
 
@@ -114,7 +114,7 @@ class UsuarioControllerTest {
     void getComprasByUsuario_notFound() throws Exception {
         Mockito.when(compraService.listarPorCompradorId(1L)).thenReturn(Collections.emptyList());
         mockMvc.perform(
-                get("/api/usuarios/1/compras")
+                get("/usuarios/1/compras")
         ).andExpect(status().isNotFound());
     }
 
@@ -130,7 +130,7 @@ class UsuarioControllerTest {
         Mockito.when(usuarioService.crearUsuario(Mockito.anyString(), Mockito.anyString(), Mockito.anyString(), Mockito.anyString(), Mockito.anyString())).thenReturn(usuario);
         String body = "{\"email\":\"test@test.com\",\"password\":\"pwd\",\"nombre\":\"Test\",\"apellido\":\"User\",\"tipoUsuario\":\"COMPRADOR\"}";
         mockMvc.perform(
-                post("/api/usuarios")
+                post("/usuarios")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body)
         ).andExpect(status().isCreated());
@@ -141,7 +141,7 @@ class UsuarioControllerTest {
         Mockito.when(usuarioService.crearUsuario(Mockito.anyString(), Mockito.anyString(), Mockito.anyString(), Mockito.anyString(), Mockito.anyString())).thenThrow(new RuntimeException("Error"));
         String body = "{\"email\":\"test@test.com\",\"password\":\"pwd\",\"nombre\":\"Test\",\"apellido\":\"User\",\"tipoUsuario\":\"COMPRADOR\"}";
         mockMvc.perform(
-                post("/api/usuarios")
+                post("/usuarios")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body)
         ).andExpect(status().isBadRequest());
@@ -158,7 +158,7 @@ class UsuarioControllerTest {
         Mockito.when(usuario.getActivo()).thenReturn(true);
         Mockito.when(usuarioService.obtenerTodosLosUsuarios()).thenReturn(List.of(usuario));
         mockMvc.perform(
-                get("/api/usuarios")
+                get("/usuarios")
         ).andExpect(status().isOk());
     }
 
@@ -173,7 +173,7 @@ class UsuarioControllerTest {
         Mockito.when(usuario.getActivo()).thenReturn(true);
         Mockito.when(usuarioService.obtenerUsuarioPorId(1L)).thenReturn(Optional.of(usuario));
         mockMvc.perform(
-                get("/api/usuarios/1")
+                get("/usuarios/1")
         ).andExpect(status().isOk());
     }
 
@@ -181,7 +181,7 @@ class UsuarioControllerTest {
     void obtenerUsuarioPorId_notFound() throws Exception {
         Mockito.when(usuarioService.obtenerUsuarioPorId(1L)).thenReturn(Optional.empty());
         mockMvc.perform(
-                get("/api/usuarios/1")
+                get("/usuarios/1")
         ).andExpect(status().isNotFound());
     }
 
@@ -196,7 +196,7 @@ class UsuarioControllerTest {
         Mockito.when(usuario.getActivo()).thenReturn(true);
         Mockito.when(usuarioService.obtenerUsuariosPorTipo("COMPRADOR")).thenReturn(List.of(usuario));
         mockMvc.perform(
-                get("/api/usuarios/por-tipo/COMPRADOR")
+                get("/usuarios/por-tipo/COMPRADOR")
         ).andExpect(status().isOk());
     }
 
@@ -204,7 +204,7 @@ class UsuarioControllerTest {
     void obtenerUsuariosPorTipo_badRequest() throws Exception {
         Mockito.when(usuarioService.obtenerUsuariosPorTipo("COMPRADOR")).thenThrow(new RuntimeException("Error"));
         mockMvc.perform(
-                get("/api/usuarios/por-tipo/COMPRADOR")
+                get("/usuarios/por-tipo/COMPRADOR")
         ).andExpect(status().isBadRequest());
     }
 }

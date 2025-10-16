@@ -1,5 +1,6 @@
 package ar.edu.unq.pdss22025.models;
 
+import ar.edu.unq.pdss22025.models.usuario.Usuario;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;

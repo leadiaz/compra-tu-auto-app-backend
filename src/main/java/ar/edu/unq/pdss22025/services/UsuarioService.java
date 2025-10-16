@@ -1,9 +1,9 @@
 package ar.edu.unq.pdss22025.services;
 
-import ar.edu.unq.pdss22025.models.Usuario;
-import ar.edu.unq.pdss22025.models.UsuarioAdmin;
-import ar.edu.unq.pdss22025.models.UsuarioComprador;
-import ar.edu.unq.pdss22025.models.UsuarioConcesionaria;
+import ar.edu.unq.pdss22025.models.usuario.Usuario;
+import ar.edu.unq.pdss22025.models.usuario.UsuarioAdmin;
+import ar.edu.unq.pdss22025.models.usuario.UsuarioComprador;
+import ar.edu.unq.pdss22025.models.usuario.UsuarioConcesionaria;
 import ar.edu.unq.pdss22025.repositories.UsuarioAdminRepository;
 import ar.edu.unq.pdss22025.repositories.UsuarioCompradorRepository;
 import ar.edu.unq.pdss22025.repositories.UsuarioConcesionariaRepository;
