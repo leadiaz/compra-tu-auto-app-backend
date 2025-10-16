@@ -1,0 +1,25 @@
+services:
+  db:
+    image: postgres:15.3
+    restart: always
+    environment:
+      POSTGRES_DB: compra_auto
+      POSTGRES_USER: compra_user
+      POSTGRES_PASSWORD: compra_pass
+    ports:
+      - "5432:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+  app:
+    build: .
+    depends_on:
+      - db
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/compra_auto
+      SPRING_DATASOURCE_USERNAME: compra_user
+      SPRING_DATASOURCE_PASSWORD: compra_pass
+      SPRING_JPA_HIBERNATE_DDL_AUTO: validate
+    ports:
+      - "8080:8080"
+volumes:
+  db_data:
