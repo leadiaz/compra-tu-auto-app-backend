@@ -1,0 +1,42 @@
+name: CI - Spring Boot (Maven)
+
+on:
+  pull_request:
+    branches: [ "develop" ]
+
+concurrency:
+  group: pr-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-test:
+    name: Build & Test (Java 17)
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+          cache: maven
+
+      - name: Maven Verify (compile + tests + checks)
+        run: mvn -B -ntp clean verify
+
+      # (Opcional) Publicar el JAR como artefacto del PR
+      # - name: Upload artifact
+      #   if: success()
+      #   uses: actions/upload-artifact@v4
+      #   with:
+      #     name: app-jar
+      #     path: |
+      #       **/target/*.jar
+      #       !**/*-sources.jar
+      #       !**/*-javadoc.jar
