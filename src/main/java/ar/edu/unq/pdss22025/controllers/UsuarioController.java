@@ -6,10 +6,10 @@ import ar.edu.unq.pdss22025.mapper.FavoritoMapper;
 import ar.edu.unq.pdss22025.models.dto.CompraResponse;
 import ar.edu.unq.pdss22025.services.CompraService;
 import ar.edu.unq.pdss22025.mapper.CompraMapper;
-import ar.edu.unq.pdss22025.models.Usuario;
-import ar.edu.unq.pdss22025.models.UsuarioAdmin;
-import ar.edu.unq.pdss22025.models.UsuarioComprador;
-import ar.edu.unq.pdss22025.models.UsuarioConcesionaria;
+import ar.edu.unq.pdss22025.models.usuario.Usuario;
+import ar.edu.unq.pdss22025.models.usuario.UsuarioAdmin;
+import ar.edu.unq.pdss22025.models.usuario.UsuarioComprador;
+import ar.edu.unq.pdss22025.models.usuario.UsuarioConcesionaria;
 import ar.edu.unq.pdss22025.models.dto.CrearUsuarioRequest;
 import ar.edu.unq.pdss22025.models.dto.UsuarioResponse;
 import ar.edu.unq.pdss22025.services.UsuarioService;
@@ -22,7 +22,7 @@ import jakarta.validation.constraints.NotNull;
 
 
 @RestController
-@RequestMapping("/api/usuarios")
+@RequestMapping("usuarios")
 public class UsuarioController {
     private final UsuarioService usuarioService;
     private final CompraService compraService;

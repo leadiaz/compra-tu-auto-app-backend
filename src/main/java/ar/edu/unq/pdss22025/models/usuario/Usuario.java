@@ -1,5 +1,6 @@
-package ar.edu.unq.pdss22025.models;
+package ar.edu.unq.pdss22025.models.usuario;
 
+import ar.edu.unq.pdss22025.models.Concesionaria;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;

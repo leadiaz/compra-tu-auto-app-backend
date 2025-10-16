@@ -1,7 +1,7 @@
 package ar.edu.unq.pdss22025.services;
 
 import ar.edu.unq.pdss22025.models.Resena;
-import ar.edu.unq.pdss22025.models.UsuarioComprador;
+import ar.edu.unq.pdss22025.models.usuario.UsuarioComprador;
 import ar.edu.unq.pdss22025.models.Auto;
 import ar.edu.unq.pdss22025.models.dto.CrearResenaRequest;
 import ar.edu.unq.pdss22025.repositories.UsuarioRepository;

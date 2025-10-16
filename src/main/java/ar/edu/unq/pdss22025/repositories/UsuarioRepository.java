@@ -1,6 +1,6 @@
 package ar.edu.unq.pdss22025.repositories;
 
-import ar.edu.unq.pdss22025.models.Usuario;
+import ar.edu.unq.pdss22025.models.usuario.Usuario;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

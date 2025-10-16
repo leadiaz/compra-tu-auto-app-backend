@@ -10,7 +10,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/compras")
+@RequestMapping("/compras")
 @Validated
 public class CompraController {
     private final CompraService compraService;
@@ -31,4 +31,3 @@ public class CompraController {
         }
     }
 }
-

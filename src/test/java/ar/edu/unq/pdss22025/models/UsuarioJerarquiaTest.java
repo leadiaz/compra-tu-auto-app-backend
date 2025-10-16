@@ -1,5 +1,8 @@
 package ar.edu.unq.pdss22025.models;
 
+import ar.edu.unq.pdss22025.models.usuario.UsuarioAdmin;
+import ar.edu.unq.pdss22025.models.usuario.UsuarioComprador;
+import ar.edu.unq.pdss22025.models.usuario.UsuarioConcesionaria;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;

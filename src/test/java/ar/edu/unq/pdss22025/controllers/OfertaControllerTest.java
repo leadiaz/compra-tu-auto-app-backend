@@ -30,14 +30,14 @@ class OfertaControllerTest {
         OfertaResponse response = new OfertaResponse();
         Mockito.when(ofertaService.listarPorConcesionaria(1L)).thenReturn(List.of(oferta));
         Mockito.when(ofertaMapper.toResponse(oferta)).thenReturn(response);
-        mockMvc.perform(get("/api/ofertas?concesionariaId=1"))
+        mockMvc.perform(get("/ofertas?concesionariaId=1"))
                 .andExpect(status().isOk());
     }
 
     @Test
     void getOfertasByConcesionaria_notFound() throws Exception {
         Mockito.when(ofertaService.listarPorConcesionaria(1L)).thenReturn(List.of());
-        mockMvc.perform(get("/api/ofertas?concesionariaId=1"))
+        mockMvc.perform(get("/ofertas?concesionariaId=1"))
                 .andExpect(status().isNotFound());
     }
 
@@ -47,14 +47,14 @@ class OfertaControllerTest {
         OfertaResponse response = new OfertaResponse();
         Mockito.when(ofertaService.listarPorAuto(2L)).thenReturn(List.of(oferta));
         Mockito.when(ofertaMapper.toResponse(oferta)).thenReturn(response);
-        mockMvc.perform(get("/api/ofertas/autos/2"))
+        mockMvc.perform(get("/ofertas/autos/2"))
                 .andExpect(status().isOk());
     }
 
     @Test
     void getOfertasByAuto_notFound() throws Exception {
         Mockito.when(ofertaService.listarPorAuto(2L)).thenReturn(List.of());
-        mockMvc.perform(get("/api/ofertas/autos/2"))
+        mockMvc.perform(get("/ofertas/autos/2"))
                 .andExpect(status().isNotFound());
     }
 }
