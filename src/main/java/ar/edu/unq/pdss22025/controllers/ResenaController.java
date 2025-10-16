@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/resenas")
+@RequestMapping("/resenas")
 @Validated
 public class ResenaController {
     private final ResenaService resenaService;

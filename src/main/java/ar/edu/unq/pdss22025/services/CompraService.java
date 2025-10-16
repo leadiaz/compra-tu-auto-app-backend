@@ -2,7 +2,7 @@ package ar.edu.unq.pdss22025.services;
 
 import ar.edu.unq.pdss22025.models.Compra;
 import ar.edu.unq.pdss22025.models.OfertaAuto;
-import ar.edu.unq.pdss22025.models.Usuario;
+import ar.edu.unq.pdss22025.models.usuario.Usuario;
 import ar.edu.unq.pdss22025.models.dto.CrearCompraRequest;
 import ar.edu.unq.pdss22025.repositories.CompraRepository;
 import ar.edu.unq.pdss22025.repositories.OfertaAutoRepository;

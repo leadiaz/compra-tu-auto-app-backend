@@ -2,8 +2,8 @@ package ar.edu.unq.pdss22025.services;
 
 import ar.edu.unq.pdss22025.models.Favorito;
 import ar.edu.unq.pdss22025.models.OfertaAuto;
-import ar.edu.unq.pdss22025.models.Usuario;
-import ar.edu.unq.pdss22025.models.UsuarioComprador;
+import ar.edu.unq.pdss22025.models.usuario.Usuario;
+import ar.edu.unq.pdss22025.models.usuario.UsuarioComprador;
 import ar.edu.unq.pdss22025.repositories.FavoritoRepository;
 import ar.edu.unq.pdss22025.repositories.OfertaAutoRepository;
 import ar.edu.unq.pdss22025.repositories.UsuarioRepository;

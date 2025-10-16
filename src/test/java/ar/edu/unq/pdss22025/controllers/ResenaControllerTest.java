@@ -32,7 +32,7 @@ class ResenaControllerTest {
         ResenaResponse response = new ResenaResponse();
         Mockito.when(resenaService.crear(Mockito.any())).thenReturn(resena);
         Mockito.when(resenaMapper.toResponse(resena)).thenReturn(response);
-        mockMvc.perform(post("/api/resenas")
+        mockMvc.perform(post("/resenas")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{}"))
                 .andExpect(status().isOk());
@@ -41,7 +41,7 @@ class ResenaControllerTest {
     @Test
     void crearResena_notFound() throws Exception {
         Mockito.when(resenaService.crear(Mockito.any())).thenThrow(new IllegalArgumentException());
-        mockMvc.perform(post("/api/resenas")
+        mockMvc.perform(post("/resenas")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{}"))
                 .andExpect(status().isNotFound());
@@ -50,7 +50,7 @@ class ResenaControllerTest {
     @Test
     void crearResena_illegalState() throws Exception {
         Mockito.when(resenaService.crear(Mockito.any())).thenThrow(new IllegalStateException());
-        mockMvc.perform(post("/api/resenas")
+        mockMvc.perform(post("/resenas")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{}"))
                 .andExpect(status().isNotFound());
@@ -62,21 +62,21 @@ class ResenaControllerTest {
         ResenaResponse response = new ResenaResponse();
         Mockito.when(resenaService.listarPorAuto(1L)).thenReturn(List.of(resena));
         Mockito.when(resenaMapper.toResponse(resena)).thenReturn(response);
-        mockMvc.perform(get("/api/resenas/autos/1"))
+        mockMvc.perform(get("/resenas/autos/1"))
                 .andExpect(status().isOk());
     }
 
     @Test
     void getResenasByAuto_notFound_emptyList() throws Exception {
         Mockito.when(resenaService.listarPorAuto(1L)).thenReturn(List.of());
-        mockMvc.perform(get("/api/resenas/autos/1"))
+        mockMvc.perform(get("/resenas/autos/1"))
                 .andExpect(status().isNotFound());
     }
 
     @Test
     void getResenasByAuto_notFound_exception() throws Exception {
         Mockito.when(resenaService.listarPorAuto(1L)).thenThrow(new IllegalArgumentException());
-        mockMvc.perform(get("/api/resenas/autos/1"))
+        mockMvc.perform(get("/resenas/autos/1"))
                 .andExpect(status().isNotFound());
     }
 }
