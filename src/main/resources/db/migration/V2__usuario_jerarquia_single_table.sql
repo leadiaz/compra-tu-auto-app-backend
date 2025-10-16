@@ -32,3 +32,17 @@ CREATE TRIGGER tr_check_favorito
 BEFORE INSERT OR UPDATE ON favorito
 FOR EACH ROW
 EXECUTE FUNCTION check_favorito_usuario_comprador();
+
+-- d) Agregar columna concesionaria_id
+ALTER TABLE usuario
+    ADD COLUMN IF NOT EXISTS concesionaria_id BIGINT;
+
+-- e) Agregar clave foránea solo si no existe
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM pg_constraint WHERE conname = 'fk_concesionaria'
+    ) THEN
+        ALTER TABLE usuario ADD CONSTRAINT fk_concesionaria FOREIGN KEY (concesionaria_id) REFERENCES concesionaria(id);
+    END IF;
+END $$;
