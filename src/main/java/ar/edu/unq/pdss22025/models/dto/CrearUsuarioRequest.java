@@ -8,5 +8,5 @@ public class CrearUsuarioRequest {
     private String password;
     private String nombre;
     private String apellido;
-    private String nombreRol;
+    private String tipoUsuario; // ADMIN | CONCESIONARIA | COMPRADOR
 }
