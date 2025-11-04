@@ -178,9 +178,11 @@ Request body (CrearUsuarioRequest):
   "password": "pwd",
   "nombre": "Test",
   "apellido": "User",
-  "tipoUsuario": "COMPRADOR" // ADMIN | CONCESIONARIA | COMPRADOR
+  "tipoUsuario": "COMPRADOR"
 }
 ```
+
+Valores posibles para `tipoUsuario`: ADMIN | CONCESIONARIA | COMPRADOR
 
 Responses:
 - 201 Created: `UsuarioResponse` (id, email, nombre, apellido, createdAt, activo, tipo)
@@ -242,7 +244,51 @@ Si quieres ejecutar en modo más verboso o con la salida estándar de Maven:
 ```
 
 
+## Entornos / Perfiles
+
+La configuración actual del proyecto mantiene el archivo raíz `application.properties` apuntando a PostgreSQL por defecto (comportamiento original). Además existe un perfil `dev` pensado para desarrollo local con H2 en memoria.
+
+- `application.properties` (root): apunta por defecto a PostgreSQL (producción-like). Si arrancas la aplicación sin especificar perfil, se usará esta configuración.
+
+- `dev` (desarrollo): usa H2 en memoria y la consola H2 está habilitada en `http://localhost:8080/h2-console`.
+  - Configuración: `src/main/resources/application-dev.properties`
+  - En `dev` Flyway está deshabilitado y Hibernate crea el esquema (`spring.jpa.hibernate.ddl-auto=create-drop`).
+  - Ejecutar local con perfil `dev`:
+
+```bash
+# con mvnw
+./mvnw spring-boot:run -Dspring-boot.run.profiles=dev
+# o estableciendo la variable de entorno
+SPRING_PROFILES_ACTIVE=dev ./mvnw spring-boot:run
+```
+
+Notas sobre producción/local con Postgres:
+
+- Si quieres usar Postgres localmente o en despliegues, `application.properties` ya apunta a Postgres. Puedes pasar credenciales mediante variables de entorno y/o modificar `application.properties`.
+- Los archivos `src/main/resources/application-prod.properties` y `src/main/resources/application-staging.properties` se conservan como referencia (comentados). Si prefieres eliminarlos, es seguro hacerlo porque la configuración por defecto está en `application.properties`.
+
+Ejemplo de ejecución usando la configuración por defecto (Postgres) y variables de entorno:
+
+```bash
+DB_HOST=127.0.0.1 DB_PORT=5432 DB_NAME=compra_auto DB_USERNAME=compra_user DB_PASSWORD=secret \
+  java -jar target/pdss22025-0.0.1-SNAPSHOT.jar
+```
+
+## Notas sobre migraciones y H2
+
+Las migraciones en `src/main/resources/db/migration` están escritas pensando en PostgreSQL; por eso en `dev` usamos H2 con Hibernate creando el esquema automáticamente. Si deseas probar las migraciones contra H2, revisa las SQL que usan funciones/constructos específicos de Postgres (por ejemplo `plpgsql`, `pg_constraint`, `DO $$`) y adáptalas o crea versiones compatibles con H2.
+
 ## Notas
 - En `src/main/resources/application.properties` la configuración por defecto apunta a PostgreSQL (entorno de producción). Para pruebas, `src/test/resources/application.properties` fuerza H2 en memoria y desactiva Flyway.
 
+
+## Documentación API (Swagger / OpenAPI)
+
+Si ejecutas la aplicación con la dependencia de `springdoc-openapi`, la documentación OpenAPI y la UI de Swagger quedan disponibles por defecto en:
+
+- Swagger UI (interfaz web): http://localhost:8080/swagger-ui.html
+- Alternativa: http://localhost:8080/swagger-ui/index.html
+- OpenAPI JSON: http://localhost:8080/v3/api-docs
+
+Ejecuta la app (dev o configuración por defecto) y abre la URL en tu navegador para explorar y probar los endpoints desde la UI.
 

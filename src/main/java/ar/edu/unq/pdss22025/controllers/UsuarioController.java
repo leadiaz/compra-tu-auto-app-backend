@@ -20,9 +20,16 @@ import java.util.List;
 import java.util.stream.Collectors;
 import jakarta.validation.constraints.NotNull;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.Parameter;
+
 
 @RestController
 @RequestMapping("usuarios")
+@Tag(name = "usuario-controller", description = "Operaciones relacionadas con usuarios, favoritos y compras")
 public class UsuarioController {
     private final UsuarioService usuarioService;
     private final CompraService compraService;
@@ -38,7 +45,13 @@ public class UsuarioController {
         this.favoritoMapper = favoritoMapper;
     }
     @GetMapping("/{usuarioId}/favorito")
-    public ResponseEntity<FavoritoResponse> getFavorito(@PathVariable("usuarioId") @NotNull Long usuarioId) {
+    @Operation(summary = "Obtener favorito del usuario", description = "Obtiene el favorito de un usuario si existe.")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Favorito encontrado"),
+        @ApiResponse(responseCode = "204", description = "El usuario no tiene favorito"),
+        @ApiResponse(responseCode = "404", description = "Usuario no encontrado")
+    })
+    public ResponseEntity<FavoritoResponse> getFavorito(@Parameter(description = "ID del usuario", required = true) @PathVariable("usuarioId") @NotNull Long usuarioId) {
         try {
             var favoritoOpt = favoritoService.obtenerPorUsuario(usuarioId);
             return favoritoOpt.map(favorito -> ResponseEntity.ok(favoritoMapper.toResponse(favorito))).orElseGet(() -> ResponseEntity.noContent().build());
@@ -48,9 +61,15 @@ public class UsuarioController {
     }
 
     @PutMapping("/{usuarioId}/favorito/{ofertaId}")
+    @Operation(summary = "Definir favorito", description = "Define la oferta indicada como favorito del usuario.")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Favorito creado o actualizado"),
+        @ApiResponse(responseCode = "404", description = "Usuario u oferta no existe"),
+        @ApiResponse(responseCode = "422", description = "Operación no procesable por reglas de negocio")
+    })
     public ResponseEntity<FavoritoResponse> setFavorito(
-            @PathVariable("usuarioId") @NotNull Long usuarioId,
-            @PathVariable("ofertaId") @NotNull Long ofertaId) {
+            @Parameter(description = "ID del usuario", required = true) @PathVariable("usuarioId") @NotNull Long usuarioId,
+            @Parameter(description = "ID de la oferta", required = true) @PathVariable("ofertaId") @NotNull Long ofertaId) {
         try {
             var favorito = favoritoService.definirFavorito(usuarioId, ofertaId);
             return ResponseEntity.ok(favoritoMapper.toResponse(favorito));
@@ -61,7 +80,12 @@ public class UsuarioController {
         }
     }
     @GetMapping("/{usuarioId}/compras")
-    public ResponseEntity<List<CompraResponse>> getComprasByUsuario(@PathVariable("usuarioId") @NotNull Long usuarioId) {
+    @Operation(summary = "Listar compras por usuario", description = "Lista las compras realizadas por un usuario.")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Listado de compras"),
+        @ApiResponse(responseCode = "404", description = "No se encontraron compras para el usuario")
+    })
+    public ResponseEntity<List<CompraResponse>> getComprasByUsuario(@Parameter(description = "ID del usuario", required = true) @PathVariable("usuarioId") @NotNull Long usuarioId) {
         List<ar.edu.unq.pdss22025.models.Compra> compras = compraService.listarPorCompradorId(usuarioId);
         if (compras == null || compras.isEmpty()) return ResponseEntity.notFound().build();
         List<CompraResponse> response = compras.stream().map(compraMapper::toResponse).toList();
@@ -69,6 +93,11 @@ public class UsuarioController {
     }
     
     @PostMapping
+    @Operation(summary = "Crear usuario", description = "Crea un nuevo usuario (ADMIN | CONCESIONARIA | COMPRADOR)")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "201", description = "Usuario creado"),
+        @ApiResponse(responseCode = "400", description = "Solicitud inválida o error en la creación")
+    })
     public ResponseEntity<?> crearUsuario(@RequestBody CrearUsuarioRequest request) {
         try {
             Usuario usuario = usuarioService.crearUsuario(
@@ -94,6 +123,10 @@ public class UsuarioController {
     }
     
     @GetMapping
+    @Operation(summary = "Listar usuarios", description = "Devuelve todos los usuarios del sistema.")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Listado de usuarios")
+    })
     public ResponseEntity<List<UsuarioResponse>> obtenerTodosLosUsuarios() {
         List<Usuario> usuarios = usuarioService.obtenerTodosLosUsuarios();
         List<UsuarioResponse> responses = usuarios.stream()
@@ -111,7 +144,12 @@ public class UsuarioController {
     }
     
     @GetMapping("/{id}")
-    public ResponseEntity<?> obtenerUsuarioPorId(@PathVariable Long id) {
+    @Operation(summary = "Obtener usuario por id", description = "Devuelve un usuario por su id.")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Usuario encontrado"),
+        @ApiResponse(responseCode = "404", description = "Usuario no encontrado")
+    })
+    public ResponseEntity<?> obtenerUsuarioPorId(@Parameter(description = "ID del usuario", required = true) @PathVariable Long id) {
         return usuarioService.obtenerUsuarioPorId(id)
                 .map(usuario -> {
                     UsuarioResponse response = new UsuarioResponse(
@@ -129,7 +167,12 @@ public class UsuarioController {
     }
     
     @GetMapping("/por-tipo/{tipoUsuario}")
-    public ResponseEntity<?> obtenerUsuariosPorTipo(@PathVariable String tipoUsuario) {
+    @Operation(summary = "Listar usuarios por tipo", description = "Filtra usuarios por tipo (ADMIN | CONCESIONARIA | COMPRADOR).")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Listado filtrado"),
+        @ApiResponse(responseCode = "400", description = "Tipo inválido")
+    })
+    public ResponseEntity<?> obtenerUsuariosPorTipo(@Parameter(description = "Tipo de usuario (ADMIN|CONCESIONARIA|COMPRADOR)", required = true) @PathVariable String tipoUsuario) {
         try {
             List<Usuario> usuarios = usuarioService.obtenerUsuariosPorTipo(tipoUsuario);
             List<UsuarioResponse> responses = usuarios.stream()
