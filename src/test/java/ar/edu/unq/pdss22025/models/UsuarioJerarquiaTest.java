@@ -55,4 +55,9 @@ class UsuarioJerarquiaTest {
         assertEquals("Buyer", comp.getApellido());
         assertTrue(comp.getActivo());
     }
+    @Test
+    @DisplayName("Test de falla")
+    void failureTest() {
+        assertEquals(1, 2, "This test is designed to fail");
+    }
 }
