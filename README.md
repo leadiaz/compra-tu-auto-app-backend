@@ -217,6 +217,41 @@ Responses:
 - 400 Bad Request: si el tipo es inválido.
 
 
+### AuthController
+- POST /auth/login
+
+Descripción: autentica un usuario usando email (campo `usuario` en el body) y `password`. Devuelve un `UsuarioResponse` con los datos públicos del usuario si las credenciales son correctas.
+
+Request body (LoginRequest):
+```json
+{
+  "usuario": "test@test.com",
+  "password": "pwd"
+}
+```
+
+Responses:
+- 200 OK
+  - Body: `UsuarioResponse` (ejemplo):
+    ```json
+    {
+      "id": 1,
+      "email": "test@test.com",
+      "nombre": "Test",
+      "apellido": "User",
+      "fechaAlta": "2025-10-16T12:34:56",
+      "activo": true,
+      "tipoUsuario": "COMPRADOR"
+    }
+    ```
+- 401 Unauthorized: credenciales inválidas (por ejemplo, email no existente o password incorrecto).
+
+Notas de seguridad y uso:
+- Actualmente la autenticación compara el `password` tal cual con el almacenado en la base de datos; en un entorno real se debe almacenar el password hasheado (por ejemplo con BCrypt) y comparar hashes en lugar de texto plano.
+- Es común devolver un token (por ejemplo JWT) al autenticar para mantener sesión en clientes; si deseas que el endpoint retorne un token, puedo agregar esa funcionalidad.
+- El endpoint espera JSON con `Content-Type: application/json`.
+
+
 ## DTOs principales (campos relevantes)
 - CrearCompraRequest: `ofertaId`, `compradorId`, `precioCerrado` (BigDecimal)
 - CompraResponse: `id`, `ofertaId`, `compradorId`, `precioCerrado`, `fechaCompra` (OffsetDateTime)
@@ -291,4 +326,3 @@ Si ejecutas la aplicación con la dependencia de `springdoc-openapi`, la documen
 - OpenAPI JSON: http://localhost:8080/v3/api-docs
 
 Ejecuta la app (dev o configuración por defecto) y abre la URL en tu navegador para explorar y probar los endpoints desde la UI.
-

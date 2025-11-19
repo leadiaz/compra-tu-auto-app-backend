@@ -77,4 +77,10 @@ public class UsuarioService {
             default -> throw new RuntimeException("Tipo de usuario no soportado: " + tipoUsuario);
         };
     }
+
+    public Usuario autenticar(String email, String password) {
+        return usuarioRepository.findByEmail(email)
+                .filter(u -> u.getPassword() != null && u.getPassword().equals(password))
+                .orElseThrow(() -> new IllegalArgumentException("Credenciales inválidas"));
+    }
 }
