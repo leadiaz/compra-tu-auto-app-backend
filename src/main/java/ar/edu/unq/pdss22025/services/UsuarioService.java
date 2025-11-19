@@ -37,19 +37,11 @@ public class UsuarioService {
         }
 
         String tipo = (tipoUsuario == null ? "COMPRADOR" : tipoUsuario.trim().toUpperCase(Locale.ROOT));
-        Usuario usuario;
-        switch (tipo) {
-            case "ADMIN":
-                usuario = new UsuarioAdmin();
-                break;
-            case "CONCESIONARIA":
-                usuario = new UsuarioConcesionaria();
-                break;
-            case "COMPRADOR":
-            default:
-                usuario = new UsuarioComprador();
-                break;
-        }
+        Usuario usuario = switch (tipo) {
+            case "ADMIN" -> new UsuarioAdmin();
+            case "CONCESIONARIA" -> new UsuarioConcesionaria();
+            default -> new UsuarioComprador();
+        };
         usuario.setEmail(email);
         usuario.setPassword(password);
         usuario.setNombre(nombre);
