@@ -37,19 +37,11 @@ public class UsuarioService {
         }
 
         String tipo = (tipoUsuario == null ? "COMPRADOR" : tipoUsuario.trim().toUpperCase(Locale.ROOT));
-        Usuario usuario;
-        switch (tipo) {
-            case "ADMIN":
-                usuario = new UsuarioAdmin();
-                break;
-            case "CONCESIONARIA":
-                usuario = new UsuarioConcesionaria();
-                break;
-            case "COMPRADOR":
-            default:
-                usuario = new UsuarioComprador();
-                break;
-        }
+        Usuario usuario = switch (tipo) {
+            case "ADMIN" -> new UsuarioAdmin();
+            case "CONCESIONARIA" -> new UsuarioConcesionaria();
+            default -> new UsuarioComprador();
+        };
         usuario.setEmail(email);
         usuario.setPassword(password);
         usuario.setNombre(nombre);
@@ -76,5 +68,11 @@ public class UsuarioService {
             case "COMPRADOR" -> new ArrayList<>(usuarioCompradorRepository.findAll());
             default -> throw new RuntimeException("Tipo de usuario no soportado: " + tipoUsuario);
         };
+    }
+
+    public Usuario autenticar(String email, String password) {
+        return usuarioRepository.findByEmail(email)
+                .filter(u -> u.getPassword() != null && u.getPassword().equals(password))
+                .orElseThrow(() -> new IllegalArgumentException("Credenciales inválidas"));
     }
 }
