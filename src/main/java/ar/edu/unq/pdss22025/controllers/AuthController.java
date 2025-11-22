@@ -30,7 +30,7 @@ public class AuthController {
     @Operation(summary = "Login", description = "Autentica un usuario por email y password y devuelve su UsuarioResponse")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Autenticación exitosa"),
-            @ApiResponse(responseCode = "401", description = "Credenciales inválidas")
+            @ApiResponse(responseCode = "403", description = "Credenciales inválidas")
     })
     public ResponseEntity<UsuarioResponse> login(@RequestBody LoginRequest request) {
         Usuario usuario = usuarioService.autenticar(request.getUsuario(), request.getPassword());

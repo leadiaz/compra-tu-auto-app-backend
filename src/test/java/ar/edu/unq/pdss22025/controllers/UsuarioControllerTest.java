@@ -66,7 +66,7 @@ class UsuarioControllerTest {
 
     @Test
     void setFavorito_unprocessableEntity() throws Exception {
-        Mockito.when(favoritoService.definirFavorito(anyLong(), anyLong())).thenThrow(new IllegalStateException());
+        Mockito.when(favoritoService.definirFavorito(anyLong(), anyLong())).thenThrow(new IllegalStateException("Solo los usuarios de tipo COMPRADOR pueden definir un favorito"));
         mockMvc.perform(put("/usuarios/1/favorito/2")
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isUnprocessableEntity());

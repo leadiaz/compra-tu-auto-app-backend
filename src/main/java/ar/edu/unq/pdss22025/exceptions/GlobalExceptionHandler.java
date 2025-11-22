@@ -105,15 +105,25 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
     }
 
+    @ExceptionHandler(CredencialesInvalidasException.class)
+    public ResponseEntity<ErrorResponse> handleCredencialesInvalidasException(
+            CredencialesInvalidasException ex, HttpServletRequest request) {
+        
+        ErrorResponse errorResponse = new ErrorResponse(
+                HttpStatus.FORBIDDEN.value(),
+                HttpStatus.FORBIDDEN.getReasonPhrase(),
+                ex.getMessage() != null ? ex.getMessage() : "Credenciales inválidas",
+                request.getRequestURI()
+        );
+        
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(errorResponse);
+    }
+
     /**
      * Determina el código de estado HTTP para IllegalArgumentException.
-     * Si el mensaje contiene "Credenciales inválidas", retorna 401.
-     * De lo contrario, retorna 404.
+     * Retorna 404 para argumentos inválidos.
      */
     private HttpStatus determineStatusForIllegalArgument(String message) {
-        if (message != null && message.contains("Credenciales inválidas")) {
-            return HttpStatus.UNAUTHORIZED;
-        }
         return HttpStatus.NOT_FOUND;
     }
 
