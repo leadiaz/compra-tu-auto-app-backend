@@ -1,5 +1,6 @@
 package ar.edu.unq.pdss22025.services;
 
+import ar.edu.unq.pdss22025.exceptions.CredencialesInvalidasException;
 import ar.edu.unq.pdss22025.models.usuario.Usuario;
 import ar.edu.unq.pdss22025.models.usuario.UsuarioAdmin;
 import ar.edu.unq.pdss22025.models.usuario.UsuarioComprador;
@@ -73,6 +74,6 @@ public class UsuarioService {
     public Usuario autenticar(String email, String password) {
         return usuarioRepository.findByEmail(email)
                 .filter(u -> u.getPassword() != null && u.getPassword().equals(password))
-                .orElseThrow(() -> new IllegalArgumentException("Credenciales inválidas"));
+                .orElseThrow(() -> new CredencialesInvalidasException());
     }
 }

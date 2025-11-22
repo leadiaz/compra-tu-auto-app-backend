@@ -52,12 +52,8 @@ public class UsuarioController {
         @ApiResponse(responseCode = "404", description = "Usuario no encontrado")
     })
     public ResponseEntity<FavoritoResponse> getFavorito(@Parameter(description = "ID del usuario", required = true) @PathVariable("usuarioId") @NotNull Long usuarioId) {
-        try {
-            var favoritoOpt = favoritoService.obtenerPorUsuario(usuarioId);
-            return favoritoOpt.map(favorito -> ResponseEntity.ok(favoritoMapper.toResponse(favorito))).orElseGet(() -> ResponseEntity.noContent().build());
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.notFound().build();
-        }
+        var favoritoOpt = favoritoService.obtenerPorUsuario(usuarioId);
+        return favoritoOpt.map(favorito -> ResponseEntity.ok(favoritoMapper.toResponse(favorito))).orElseGet(() -> ResponseEntity.noContent().build());
     }
 
     @PutMapping("/{usuarioId}/favorito/{ofertaId}")
@@ -70,14 +66,8 @@ public class UsuarioController {
     public ResponseEntity<FavoritoResponse> setFavorito(
             @Parameter(description = "ID del usuario", required = true) @PathVariable("usuarioId") @NotNull Long usuarioId,
             @Parameter(description = "ID de la oferta", required = true) @PathVariable("ofertaId") @NotNull Long ofertaId) {
-        try {
-            var favorito = favoritoService.definirFavorito(usuarioId, ofertaId);
-            return ResponseEntity.ok(favoritoMapper.toResponse(favorito));
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.notFound().build();
-        } catch (IllegalStateException e) {
-            return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).build();
-        }
+        var favorito = favoritoService.definirFavorito(usuarioId, ofertaId);
+        return ResponseEntity.ok(favoritoMapper.toResponse(favorito));
     }
     @GetMapping("/{usuarioId}/compras")
     @Operation(summary = "Listar compras por usuario", description = "Lista las compras realizadas por un usuario.")
@@ -98,28 +88,24 @@ public class UsuarioController {
         @ApiResponse(responseCode = "201", description = "Usuario creado"),
         @ApiResponse(responseCode = "400", description = "Solicitud inválida o error en la creación")
     })
-    public ResponseEntity<?> crearUsuario(@RequestBody CrearUsuarioRequest request) {
-        try {
-            Usuario usuario = usuarioService.crearUsuario(
-                request.getEmail(),
-                request.getPassword(),
-                request.getNombre(),
-                request.getApellido(),
-                request.getTipoUsuario()
-            );
-            UsuarioResponse response = new UsuarioResponse(
-                usuario.getId(),
-                usuario.getEmail(),
-                usuario.getNombre(),
-                usuario.getApellido(),
-                usuario.getCreatedAt() != null ? usuario.getCreatedAt().toLocalDateTime() : null,
-                usuario.getActivo(),
-                tipoDe(usuario)
-            );
-            return ResponseEntity.status(HttpStatus.CREATED).body(response);
-        } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body("Error: " + e.getMessage());
-        }
+    public ResponseEntity<UsuarioResponse> crearUsuario(@RequestBody CrearUsuarioRequest request) {
+        Usuario usuario = usuarioService.crearUsuario(
+            request.getEmail(),
+            request.getPassword(),
+            request.getNombre(),
+            request.getApellido(),
+            request.getTipoUsuario()
+        );
+        UsuarioResponse response = new UsuarioResponse(
+            usuario.getId(),
+            usuario.getEmail(),
+            usuario.getNombre(),
+            usuario.getApellido(),
+            usuario.getCreatedAt() != null ? usuario.getCreatedAt().toLocalDateTime() : null,
+            usuario.getActivo(),
+            tipoDe(usuario)
+        );
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
     
     @GetMapping
@@ -149,7 +135,7 @@ public class UsuarioController {
         @ApiResponse(responseCode = "200", description = "Usuario encontrado"),
         @ApiResponse(responseCode = "404", description = "Usuario no encontrado")
     })
-    public ResponseEntity<?> obtenerUsuarioPorId(@Parameter(description = "ID del usuario", required = true) @PathVariable Long id) {
+    public ResponseEntity<UsuarioResponse> obtenerUsuarioPorId(@Parameter(description = "ID del usuario", required = true) @PathVariable Long id) {
         return usuarioService.obtenerUsuarioPorId(id)
                 .map(usuario -> {
                     UsuarioResponse response = new UsuarioResponse(
@@ -172,24 +158,20 @@ public class UsuarioController {
         @ApiResponse(responseCode = "200", description = "Listado filtrado"),
         @ApiResponse(responseCode = "400", description = "Tipo inválido")
     })
-    public ResponseEntity<?> obtenerUsuariosPorTipo(@Parameter(description = "Tipo de usuario (ADMIN|CONCESIONARIA|COMPRADOR)", required = true) @PathVariable String tipoUsuario) {
-        try {
-            List<Usuario> usuarios = usuarioService.obtenerUsuariosPorTipo(tipoUsuario);
-            List<UsuarioResponse> responses = usuarios.stream()
-                    .map(usuario -> new UsuarioResponse(
-                        usuario.getId(),
-                        usuario.getEmail(),
-                        usuario.getNombre(),
-                        usuario.getApellido(),
-                        usuario.getCreatedAt() != null ? usuario.getCreatedAt().toLocalDateTime() : null,
-                        usuario.getActivo(),
-                        tipoDe(usuario)
-                    ))
-                    .collect(Collectors.toList());
-            return ResponseEntity.ok(responses);
-        } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body("Error: " + e.getMessage());
-        }
+    public ResponseEntity<List<UsuarioResponse>> obtenerUsuariosPorTipo(@Parameter(description = "Tipo de usuario (ADMIN|CONCESIONARIA|COMPRADOR)", required = true) @PathVariable String tipoUsuario) {
+        List<Usuario> usuarios = usuarioService.obtenerUsuariosPorTipo(tipoUsuario);
+        List<UsuarioResponse> responses = usuarios.stream()
+                .map(usuario -> new UsuarioResponse(
+                    usuario.getId(),
+                    usuario.getEmail(),
+                    usuario.getNombre(),
+                    usuario.getApellido(),
+                    usuario.getCreatedAt() != null ? usuario.getCreatedAt().toLocalDateTime() : null,
+                    usuario.getActivo(),
+                    tipoDe(usuario)
+                ))
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(responses);
     }
 
     private String tipoDe(Usuario u) {

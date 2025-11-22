@@ -1,5 +1,6 @@
 package ar.edu.unq.pdss22025.controllers;
 
+import ar.edu.unq.pdss22025.exceptions.CredencialesInvalidasException;
 import ar.edu.unq.pdss22025.models.usuario.Usuario;
 import ar.edu.unq.pdss22025.services.UsuarioService;
 import org.junit.jupiter.api.Test;
@@ -45,15 +46,15 @@ class AuthControllerTest {
     }
 
     @Test
-    void login_unauthorized() throws Exception {
-        Mockito.when(usuarioService.autenticar(Mockito.anyString(), Mockito.anyString())).thenThrow(new IllegalArgumentException());
+    void login_forbidden() throws Exception {
+        Mockito.when(usuarioService.autenticar(Mockito.anyString(), Mockito.anyString())).thenThrow(new CredencialesInvalidasException());
 
         String body = "{\"usuario\":\"test@test.com\",\"password\":\"wrong\"}";
 
         mockMvc.perform(post("/auth/login")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(body))
-                .andExpect(status().isUnauthorized());
+                .andExpect(status().isForbidden());
     }
 }
 

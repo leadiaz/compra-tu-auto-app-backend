@@ -36,12 +36,8 @@ public class ResenaController {
             @ApiResponse(responseCode = "404", description = "Datos inválidos o recurso no encontrado")
     })
     public ResponseEntity<ResenaResponse> crearResena(@Valid @RequestBody CrearResenaRequest request) {
-        try {
-            var resena = resenaService.crear(request);
-            return ResponseEntity.ok(resenaMapper.toResponse(resena));
-        } catch (IllegalArgumentException | IllegalStateException e) {
-            return ResponseEntity.notFound().build();
-        }
+        var resena = resenaService.crear(request);
+        return ResponseEntity.ok(resenaMapper.toResponse(resena));
     }
 
     @GetMapping("/autos/{autoId}")
@@ -51,12 +47,7 @@ public class ResenaController {
             @ApiResponse(responseCode = "404", description = "No se encontraron reseñas o el auto es inválido")
     })
     public ResponseEntity<List<ResenaResponse>> getResenasByAuto(@Parameter(description = "ID del auto", required = true) @PathVariable("autoId") @NotNull Long autoId) {
-        List<ar.edu.unq.pdss22025.models.Resena> resenas;
-        try {
-            resenas = resenaService.listarPorAuto(autoId);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.notFound().build();
-        }
+        List<ar.edu.unq.pdss22025.models.Resena> resenas = resenaService.listarPorAuto(autoId);
         if (resenas == null || resenas.isEmpty()) return ResponseEntity.notFound().build();
         List<ResenaResponse> response = resenas.stream().map(resenaMapper::toResponse).toList();
         return ResponseEntity.ok(response);
