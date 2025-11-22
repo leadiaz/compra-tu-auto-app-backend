@@ -1,0 +1,141 @@
+package ar.edu.unq.pdss22025.exceptions;
+
+import ar.edu.unq.pdss22025.models.dto.ErrorResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.ConstraintViolationException;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
+
+import java.util.stream.Collectors;
+
+@RestControllerAdvice
+public class GlobalExceptionHandler {
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<ErrorResponse> handleIllegalArgumentException(
+            IllegalArgumentException ex, HttpServletRequest request) {
+        
+        // Determinar el código de estado según el contexto
+        // Para autenticación, usar 401, para otros casos 404
+        HttpStatus status = determineStatusForIllegalArgument(ex.getMessage());
+        
+        ErrorResponse errorResponse = new ErrorResponse(
+                status.value(),
+                status.getReasonPhrase(),
+                ex.getMessage() != null ? ex.getMessage() : "Argumento inválido",
+                request.getRequestURI()
+        );
+        
+        return ResponseEntity.status(status).body(errorResponse);
+    }
+
+    @ExceptionHandler(IllegalStateException.class)
+    public ResponseEntity<ErrorResponse> handleIllegalStateException(
+            IllegalStateException ex, HttpServletRequest request) {
+        
+        // Determinar el código de estado según el contexto
+        // Para reglas de negocio, usar 422, para otros casos 404
+        HttpStatus status = determineStatusForIllegalState(ex.getMessage());
+        
+        ErrorResponse errorResponse = new ErrorResponse(
+                status.value(),
+                status.getReasonPhrase(),
+                ex.getMessage() != null ? ex.getMessage() : "Estado inválido",
+                request.getRequestURI()
+        );
+        
+        return ResponseEntity.status(status).body(errorResponse);
+    }
+
+    @ExceptionHandler(RuntimeException.class)
+    public ResponseEntity<ErrorResponse> handleRuntimeException(
+            RuntimeException ex, HttpServletRequest request) {
+        
+        ErrorResponse errorResponse = new ErrorResponse(
+                HttpStatus.BAD_REQUEST.value(),
+                HttpStatus.BAD_REQUEST.getReasonPhrase(),
+                ex.getMessage() != null ? ex.getMessage() : "Error en la solicitud",
+                request.getRequestURI()
+        );
+        
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ErrorResponse> handleMethodArgumentNotValidException(
+            MethodArgumentNotValidException ex, HttpServletRequest request) {
+        
+        String errorMessage = ex.getBindingResult().getFieldErrors().stream()
+                .map(FieldError::getDefaultMessage)
+                .collect(Collectors.joining(", "));
+        
+        if (errorMessage.isEmpty()) {
+            errorMessage = "Error de validación en los argumentos";
+        }
+        
+        ErrorResponse errorResponse = new ErrorResponse(
+                HttpStatus.BAD_REQUEST.value(),
+                HttpStatus.BAD_REQUEST.getReasonPhrase(),
+                errorMessage,
+                request.getRequestURI()
+        );
+        
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+    }
+
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ResponseEntity<ErrorResponse> handleConstraintViolationException(
+            ConstraintViolationException ex, HttpServletRequest request) {
+        
+        String errorMessage = ex.getConstraintViolations().stream()
+                .map(violation -> violation.getMessage())
+                .collect(Collectors.joining(", "));
+        
+        ErrorResponse errorResponse = new ErrorResponse(
+                HttpStatus.BAD_REQUEST.value(),
+                HttpStatus.BAD_REQUEST.getReasonPhrase(),
+                errorMessage,
+                request.getRequestURI()
+        );
+        
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+    }
+
+    /**
+     * Determina el código de estado HTTP para IllegalArgumentException.
+     * Si el mensaje contiene "Credenciales inválidas", retorna 401.
+     * De lo contrario, retorna 404.
+     */
+    private HttpStatus determineStatusForIllegalArgument(String message) {
+        if (message != null && message.contains("Credenciales inválidas")) {
+            return HttpStatus.UNAUTHORIZED;
+        }
+        return HttpStatus.NOT_FOUND;
+    }
+
+    /**
+     * Determina el código de estado HTTP para IllegalStateException.
+     * Si el mensaje contiene palabras relacionadas con reglas de negocio o restricciones,
+     * retorna 422. De lo contrario, retorna 404.
+     */
+    private HttpStatus determineStatusForIllegalState(String message) {
+        if (message != null) {
+            String lowerMessage = message.toLowerCase();
+            if (lowerMessage.contains("solo los usuarios") || 
+                lowerMessage.contains("pueden definir") ||
+                lowerMessage.contains("sin stock") ||
+                lowerMessage.contains("precio no disponible") ||
+                lowerMessage.contains("no permitido") ||
+                lowerMessage.contains("no puede") ||
+                lowerMessage.contains("regla")) {
+                return HttpStatus.UNPROCESSABLE_ENTITY;
+            }
+        }
+        return HttpStatus.NOT_FOUND;
+    }
+}
+

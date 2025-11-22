@@ -30,14 +30,11 @@ public class CompraController {
     @Operation(summary = "Crear compra", description = "Crea una compra a partir de una oferta y un comprador. Devuelve la compra creada.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Compra creada correctamente"),
-            @ApiResponse(responseCode = "404", description = "Datos inválidos o recurso no encontrado")
+            @ApiResponse(responseCode = "404", description = "Datos inválidos o recurso no encontrado"),
+            @ApiResponse(responseCode = "422", description = "Operación no procesable por reglas de negocio")
     })
     public ResponseEntity<CompraResponse> crearCompra(@Valid @RequestBody CrearCompraRequest request) {
-        try {
-            var compra = compraService.crear(request);
-            return ResponseEntity.ok(compraMapper.toResponse(compra));
-        } catch (IllegalArgumentException | IllegalStateException e) {
-            return ResponseEntity.notFound().build();
-        }
+        var compra = compraService.crear(request);
+        return ResponseEntity.ok(compraMapper.toResponse(compra));
     }
 }
