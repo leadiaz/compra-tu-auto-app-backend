@@ -1,5 +1,6 @@
 package ar.edu.unq.pdss22025.services;
 
+import ar.edu.unq.pdss22025.exceptions.EntidadNoEncontradaException;
 import ar.edu.unq.pdss22025.models.Compra;
 import ar.edu.unq.pdss22025.models.OfertaAuto;
 import ar.edu.unq.pdss22025.models.usuario.UsuarioComprador;
@@ -128,8 +129,8 @@ class CompraServiceTest {
         request.setCompradorId(comprador.getId());
 
         // When & Then
-        IllegalArgumentException exception = assertThrows(
-                IllegalArgumentException.class,
+        EntidadNoEncontradaException exception = assertThrows(
+                EntidadNoEncontradaException.class,
                 () -> compraService.crear(request)
         );
         assertEquals("Oferta no encontrada", exception.getMessage());
@@ -143,8 +144,8 @@ class CompraServiceTest {
         request.setCompradorId(999L); // ID inexistente
 
         // When & Then
-        IllegalArgumentException exception = assertThrows(
-                IllegalArgumentException.class,
+        EntidadNoEncontradaException exception = assertThrows(
+                EntidadNoEncontradaException.class,
                 () -> compraService.crear(request)
         );
         assertEquals("Comprador no encontrado", exception.getMessage());

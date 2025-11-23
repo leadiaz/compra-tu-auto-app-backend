@@ -1,5 +1,6 @@
 package ar.edu.unq.pdss22025.services;
 
+import ar.edu.unq.pdss22025.exceptions.EntidadNoEncontradaException;
 import ar.edu.unq.pdss22025.models.Auto;
 import ar.edu.unq.pdss22025.models.Resena;
 import ar.edu.unq.pdss22025.models.usuario.Usuario;
@@ -32,9 +33,9 @@ public class ResenaService {
         }
 
         Auto auto = autoRepository.findById(request.getAutoId())
-                .orElseThrow(() -> new IllegalArgumentException("Auto no encontrado"));
+                .orElseThrow(() -> new EntidadNoEncontradaException("Auto no encontrado"));
         Usuario usuario = usuarioRepository.findById(request.getUsuarioId())
-                .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado"));
+                .orElseThrow(() -> new EntidadNoEncontradaException("Usuario no encontrado"));
 
         Resena resena = Resena.builder()
                 .auto(auto)
@@ -49,7 +50,7 @@ public class ResenaService {
     @Transactional(readOnly = true)
     public List<Resena> listarPorAuto(Long autoId) {
         Auto auto = autoRepository.findById(autoId)
-                .orElseThrow(() -> new IllegalArgumentException("Auto no encontrado"));
+                .orElseThrow(() -> new EntidadNoEncontradaException("Auto no encontrado"));
         return resenaRepository.findByAutoOrderByCreatedAtDesc(auto);
     }
 }

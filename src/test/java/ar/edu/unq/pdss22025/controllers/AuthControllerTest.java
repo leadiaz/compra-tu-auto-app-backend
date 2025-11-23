@@ -3,9 +3,12 @@ package ar.edu.unq.pdss22025.controllers;
 import ar.edu.unq.pdss22025.exceptions.CredencialesInvalidasException;
 import ar.edu.unq.pdss22025.models.usuario.Usuario;
 import ar.edu.unq.pdss22025.services.UsuarioService;
+import ar.edu.unq.pdss22025.services.JwtService;
+import ar.edu.unq.pdss22025.services.UsuarioDetailsService;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -16,7 +19,10 @@ import java.time.OffsetDateTime;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@WebMvcTest(AuthController.class)
+@WebMvcTest(controllers = AuthController.class, excludeAutoConfiguration = {
+    org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration.class
+})
+@AutoConfigureMockMvc(addFilters = false)
 class AuthControllerTest {
 
     @Autowired
@@ -24,6 +30,12 @@ class AuthControllerTest {
 
     @MockitoBean
     private UsuarioService usuarioService;
+
+    @MockitoBean
+    private JwtService jwtService;
+
+    @MockitoBean
+    private UsuarioDetailsService usuarioDetailsService;
 
     @Test
     void login_ok() throws Exception {
@@ -36,6 +48,7 @@ class AuthControllerTest {
         Mockito.when(usuario.getActivo()).thenReturn(true);
 
         Mockito.when(usuarioService.autenticar(Mockito.anyString(), Mockito.anyString())).thenReturn(usuario);
+        Mockito.when(jwtService.generateToken(Mockito.anyLong(), Mockito.anyString(), Mockito.anyString())).thenReturn("test-token");
 
         String body = "{\"usuario\":\"test@test.com\",\"password\":\"pwd\"}";
 
@@ -46,7 +59,7 @@ class AuthControllerTest {
     }
 
     @Test
-    void login_forbidden() throws Exception {
+    void login_unauthorized() throws Exception {
         Mockito.when(usuarioService.autenticar(Mockito.anyString(), Mockito.anyString())).thenThrow(new CredencialesInvalidasException());
 
         String body = "{\"usuario\":\"test@test.com\",\"password\":\"wrong\"}";
@@ -54,7 +67,7 @@ class AuthControllerTest {
         mockMvc.perform(post("/auth/login")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(body))
-                .andExpect(status().isForbidden());
+                .andExpect(status().isUnauthorized());
     }
 }
 
