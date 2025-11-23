@@ -21,10 +21,13 @@ import java.util.stream.Collectors;
 import jakarta.validation.constraints.NotNull;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.Parameter;
+import ar.edu.unq.pdss22025.models.dto.ErrorResponse;
 
 
 @RestController
@@ -49,7 +52,8 @@ public class UsuarioController {
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Favorito encontrado"),
         @ApiResponse(responseCode = "204", description = "El usuario no tiene favorito"),
-        @ApiResponse(responseCode = "404", description = "Usuario no encontrado")
+        @ApiResponse(responseCode = "404", description = "Usuario no encontrado",
+                content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     public ResponseEntity<FavoritoResponse> getFavorito(@Parameter(description = "ID del usuario", required = true) @PathVariable("usuarioId") @NotNull Long usuarioId) {
         var favoritoOpt = favoritoService.obtenerPorUsuario(usuarioId);
@@ -60,8 +64,10 @@ public class UsuarioController {
     @Operation(summary = "Definir favorito", description = "Define la oferta indicada como favorito del usuario.")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Favorito creado o actualizado"),
-        @ApiResponse(responseCode = "404", description = "Usuario u oferta no existe"),
-        @ApiResponse(responseCode = "422", description = "Operación no procesable por reglas de negocio")
+        @ApiResponse(responseCode = "404", description = "Usuario u oferta no existe",
+                content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+        @ApiResponse(responseCode = "422", description = "Operación no procesable por reglas de negocio",
+                content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     public ResponseEntity<FavoritoResponse> setFavorito(
             @Parameter(description = "ID del usuario", required = true) @PathVariable("usuarioId") @NotNull Long usuarioId,
@@ -73,7 +79,8 @@ public class UsuarioController {
     @Operation(summary = "Listar compras por usuario", description = "Lista las compras realizadas por un usuario.")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Listado de compras"),
-        @ApiResponse(responseCode = "404", description = "No se encontraron compras para el usuario")
+        @ApiResponse(responseCode = "404", description = "No se encontraron compras para el usuario",
+                content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     public ResponseEntity<List<CompraResponse>> getComprasByUsuario(@Parameter(description = "ID del usuario", required = true) @PathVariable("usuarioId") @NotNull Long usuarioId) {
         List<ar.edu.unq.pdss22025.models.Compra> compras = compraService.listarPorCompradorId(usuarioId);
@@ -86,7 +93,8 @@ public class UsuarioController {
     @Operation(summary = "Crear usuario", description = "Crea un nuevo usuario (ADMIN | CONCESIONARIA | COMPRADOR)")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "201", description = "Usuario creado"),
-        @ApiResponse(responseCode = "400", description = "Solicitud inválida o error en la creación")
+        @ApiResponse(responseCode = "400", description = "Solicitud inválida o error en la creación",
+                content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     public ResponseEntity<UsuarioResponse> crearUsuario(@RequestBody CrearUsuarioRequest request) {
         Usuario usuario = usuarioService.crearUsuario(
@@ -133,7 +141,8 @@ public class UsuarioController {
     @Operation(summary = "Obtener usuario por id", description = "Devuelve un usuario por su id.")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Usuario encontrado"),
-        @ApiResponse(responseCode = "404", description = "Usuario no encontrado")
+        @ApiResponse(responseCode = "404", description = "Usuario no encontrado",
+                content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     public ResponseEntity<UsuarioResponse> obtenerUsuarioPorId(@Parameter(description = "ID del usuario", required = true) @PathVariable Long id) {
         return usuarioService.obtenerUsuarioPorId(id)
@@ -156,7 +165,8 @@ public class UsuarioController {
     @Operation(summary = "Listar usuarios por tipo", description = "Filtra usuarios por tipo (ADMIN | CONCESIONARIA | COMPRADOR).")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Listado filtrado"),
-        @ApiResponse(responseCode = "400", description = "Tipo inválido")
+        @ApiResponse(responseCode = "400", description = "Tipo inválido",
+                content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     public ResponseEntity<List<UsuarioResponse>> obtenerUsuariosPorTipo(@Parameter(description = "Tipo de usuario (ADMIN|CONCESIONARIA|COMPRADOR)", required = true) @PathVariable String tipoUsuario) {
         List<Usuario> usuarios = usuarioService.obtenerUsuariosPorTipo(tipoUsuario);

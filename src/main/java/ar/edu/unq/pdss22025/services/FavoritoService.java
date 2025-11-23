@@ -1,5 +1,6 @@
 package ar.edu.unq.pdss22025.services;
 
+import ar.edu.unq.pdss22025.exceptions.EntidadNoEncontradaException;
 import ar.edu.unq.pdss22025.models.Favorito;
 import ar.edu.unq.pdss22025.models.OfertaAuto;
 import ar.edu.unq.pdss22025.models.usuario.Usuario;
@@ -28,21 +29,21 @@ public class FavoritoService {
     @Transactional(readOnly = true)
     public Optional<Favorito> obtenerPorUsuario(Long usuarioId) {
         usuarioRepository.findById(usuarioId)
-                .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado"));
+                .orElseThrow(() -> new EntidadNoEncontradaException("Usuario no encontrado"));
         return favoritoRepository.findByUsuarioId(usuarioId);
     }
 
     @Transactional
     public Favorito definirFavorito(Long usuarioId, Long ofertaId) {
         Usuario usuario = usuarioRepository.findById(usuarioId)
-                .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado"));
+                .orElseThrow(() -> new EntidadNoEncontradaException("Usuario no encontrado"));
 
         if (!(usuario instanceof UsuarioComprador)) {
             throw new IllegalStateException("Solo los usuarios de tipo COMPRADOR pueden definir un favorito");
         }
 
         OfertaAuto oferta = ofertaAutoRepository.findById(ofertaId)
-                .orElseThrow(() -> new IllegalArgumentException("Oferta no encontrada"));
+                .orElseThrow(() -> new EntidadNoEncontradaException("Oferta no encontrada"));
 
         favoritoRepository.findByUsuarioId(usuarioId).ifPresent(existing -> {
             favoritoRepository.delete(existing);

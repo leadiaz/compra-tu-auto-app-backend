@@ -252,6 +252,26 @@ Notas de seguridad y uso:
 - El endpoint espera JSON con `Content-Type: application/json`.
 
 
+## Manejo de Excepciones
+
+La API utiliza excepciones personalizadas para manejar diferentes tipos de errores:
+
+- **EntidadNoEncontradaException**: Se lanza cuando se intenta acceder a una entidad que no existe (usuario, oferta, auto, etc.). Retorna **404 Not Found**.
+- **CredencialesInvalidasException**: Se lanza cuando las credenciales de autenticación son incorrectas. Retorna **401 Unauthorized**.
+- **IllegalStateException**: Se lanza cuando se violan reglas de negocio. Puede retornar **404 Not Found** (estados inconsistentes) o **422 Unprocessable Entity** (reglas de negocio).
+- **IllegalArgumentException**: Se lanza cuando los argumentos proporcionados son inválidos. Retorna **404 Not Found** para entidades no encontradas o **400 Bad Request** para otros casos.
+
+Todas las excepciones son manejadas por el `GlobalExceptionHandler` y retornan un `ErrorResponse` con el formato:
+```json
+{
+  "timestamp": "2025-10-16T12:34:56",
+  "status": 404,
+  "error": "Not Found",
+  "message": "Usuario no encontrado",
+  "path": "/usuarios/999"
+}
+```
+
 ## DTOs principales (campos relevantes)
 - CrearCompraRequest: `ofertaId`, `compradorId`, `precioCerrado` (BigDecimal)
 - CompraResponse: `id`, `ofertaId`, `compradorId`, `precioCerrado`, `fechaCompra` (OffsetDateTime)

@@ -27,7 +27,11 @@ public class JwtService {
     }
 
     public String extractUsername(String token) {
-        return extractClaim(token, Claims::getSubject);
+        try {
+            return extractClaim(token, Claims::getSubject);
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     public Long extractUserId(String token) {
@@ -53,7 +57,12 @@ public class JwtService {
     }
 
     private Boolean isTokenExpired(String token) {
-        return extractExpiration(token).before(new Date());
+        try {
+            Date expiration = extractExpiration(token);
+            return expiration != null && expiration.before(new Date());
+        } catch (Exception e) {
+            return true; // Si no se puede extraer la fecha de expiración, considerar el token como expirado
+        }
     }
 
     public String generateToken(Long userId, String email, String tipoUsuario) {
@@ -74,8 +83,15 @@ public class JwtService {
     }
 
     public Boolean validateToken(String token, String username) {
-        final String extractedUsername = extractUsername(token);
-        return (extractedUsername.equals(username) && !isTokenExpired(token));
+        try {
+            final String extractedUsername = extractUsername(token);
+            if (extractedUsername == null || username == null) {
+                return false;
+            }
+            return (extractedUsername.equals(username) && !isTokenExpired(token));
+        } catch (Exception e) {
+            return false;
+        }
     }
 
     public Boolean validateToken(String token) {

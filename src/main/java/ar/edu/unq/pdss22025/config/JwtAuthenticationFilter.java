@@ -59,8 +59,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     SecurityContextHolder.getContext().setAuthentication(authToken);
                 }
             }
+        } catch (org.springframework.security.core.userdetails.UsernameNotFoundException e) {
+            // Usuario no encontrado en la base de datos, continuar sin autenticación
+            // Esto es seguro porque no se establece el contexto de seguridad
+        } catch (io.jsonwebtoken.JwtException e) {
+            // Token inválido, malformado o con firma incorrecta, continuar sin autenticación
+            // Esto es seguro porque no se establece el contexto de seguridad
         } catch (Exception e) {
-            // Token inválido, continuar sin autenticación
+            // Cualquier otro error (parsing, null pointer, etc.), continuar sin autenticación
+            // Esto es seguro porque no se establece el contexto de seguridad
         }
 
         filterChain.doFilter(request, response);

@@ -1,5 +1,6 @@
 package ar.edu.unq.pdss22025.services;
 
+import ar.edu.unq.pdss22025.exceptions.EntidadNoEncontradaException;
 import ar.edu.unq.pdss22025.models.Favorito;
 import ar.edu.unq.pdss22025.models.OfertaAuto;
 import ar.edu.unq.pdss22025.models.usuario.Usuario;
@@ -164,8 +165,8 @@ class FavoritoServiceTest {
     @Test
     void definirFavorito_ConUsuarioInexistente_DeberiaLanzarExcepcion() {
         // When & Then
-        IllegalArgumentException exception = assertThrows(
-                IllegalArgumentException.class,
+        EntidadNoEncontradaException exception = assertThrows(
+                EntidadNoEncontradaException.class,
                 () -> favoritoService.definirFavorito(999L, oferta1.getId())
         );
         assertEquals("Usuario no encontrado", exception.getMessage());
@@ -174,8 +175,8 @@ class FavoritoServiceTest {
     @Test
     void definirFavorito_ConOfertaInexistente_DeberiaLanzarExcepcion() {
         // When & Then
-        IllegalArgumentException exception = assertThrows(
-                IllegalArgumentException.class,
+        EntidadNoEncontradaException exception = assertThrows(
+                EntidadNoEncontradaException.class,
                 () -> favoritoService.definirFavorito(usuario.getId(), 999L)
         );
         assertEquals("Oferta no encontrada", exception.getMessage());
@@ -193,8 +194,8 @@ class FavoritoServiceTest {
     @Test
     void obtenerPorUsuario_ConUsuarioInexistente_DeberiaLanzarExcepcion() {
         // When & Then
-        IllegalArgumentException exception = assertThrows(
-                IllegalArgumentException.class,
+        EntidadNoEncontradaException exception = assertThrows(
+                EntidadNoEncontradaException.class,
                 () -> favoritoService.obtenerPorUsuario(999L)
         );
         assertEquals("Usuario no encontrado", exception.getMessage());

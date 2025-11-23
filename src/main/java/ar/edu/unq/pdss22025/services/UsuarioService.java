@@ -9,7 +9,7 @@ import ar.edu.unq.pdss22025.repositories.UsuarioAdminRepository;
 import ar.edu.unq.pdss22025.repositories.UsuarioCompradorRepository;
 import ar.edu.unq.pdss22025.repositories.UsuarioConcesionariaRepository;
 import ar.edu.unq.pdss22025.repositories.UsuarioRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -20,17 +20,19 @@ import java.util.Optional;
 @Service
 public class UsuarioService {
 
-    @Autowired
-    private UsuarioRepository usuarioRepository;
+    private final UsuarioRepository usuarioRepository;    
+    private final UsuarioAdminRepository usuarioAdminRepository;
+    private final UsuarioConcesionariaRepository usuarioConcesionariaRepository;
+    private final UsuarioCompradorRepository usuarioCompradorRepository;
+    private final PasswordEncoder passwordEncoder;
 
-    @Autowired
-    private UsuarioAdminRepository usuarioAdminRepository;
-
-    @Autowired
-    private UsuarioConcesionariaRepository usuarioConcesionariaRepository;
-
-    @Autowired
-    private UsuarioCompradorRepository usuarioCompradorRepository;
+    public UsuarioService(PasswordEncoder passwordEncoder, UsuarioRepository usuarioRepository, UsuarioAdminRepository usuarioAdminRepository, UsuarioCompradorRepository usuarioCompradorRepository, UsuarioConcesionariaRepository usuarioConcesionariaRepository) {
+        this.usuarioRepository = usuarioRepository;
+        this.passwordEncoder = passwordEncoder;
+        this.usuarioCompradorRepository = usuarioCompradorRepository;
+        this.usuarioConcesionariaRepository = usuarioConcesionariaRepository;
+        this.usuarioAdminRepository = usuarioAdminRepository;
+    }
 
     public Usuario crearUsuario(String email, String password, String nombre, String apellido, String tipoUsuario) {
         if (usuarioRepository.existsByEmail(email)) {
@@ -44,7 +46,7 @@ public class UsuarioService {
             default -> new UsuarioComprador();
         };
         usuario.setEmail(email);
-        usuario.setPassword(password);
+        usuario.setPassword(passwordEncoder.encode(password));
         usuario.setNombre(nombre);
         usuario.setApellido(apellido);
         usuario.setActivo(true);
@@ -73,7 +75,7 @@ public class UsuarioService {
 
     public Usuario autenticar(String email, String password) {
         return usuarioRepository.findByEmail(email)
-                .filter(u -> u.getPassword() != null && u.getPassword().equals(password))
+                .filter(u -> u.getPassword() != null && passwordEncoder.matches(password, u.getPassword()))
                 .orElseThrow(() -> new CredencialesInvalidasException());
     }
 }

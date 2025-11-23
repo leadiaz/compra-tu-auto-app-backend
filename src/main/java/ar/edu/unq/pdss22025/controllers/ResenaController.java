@@ -11,10 +11,13 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.Parameter;
+import ar.edu.unq.pdss22025.models.dto.ErrorResponse;
 
 @RestController
 @RequestMapping("/resenas")
@@ -33,7 +36,8 @@ public class ResenaController {
     @Operation(summary = "Crear reseña", description = "Crea una reseña para un auto por parte de un usuario y devuelve la reseña creada.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Reseña creada correctamente"),
-            @ApiResponse(responseCode = "404", description = "Datos inválidos o recurso no encontrado")
+            @ApiResponse(responseCode = "404", description = "Datos inválidos o recurso no encontrado",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     public ResponseEntity<ResenaResponse> crearResena(@Valid @RequestBody CrearResenaRequest request) {
         var resena = resenaService.crear(request);
@@ -44,7 +48,8 @@ public class ResenaController {
     @Operation(summary = "Listar reseñas por auto", description = "Obtiene todas las reseñas asociadas a un auto.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Listado de reseñas para el auto"),
-            @ApiResponse(responseCode = "404", description = "No se encontraron reseñas o el auto es inválido")
+            @ApiResponse(responseCode = "404", description = "No se encontraron reseñas o el auto es inválido",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     public ResponseEntity<List<ResenaResponse>> getResenasByAuto(@Parameter(description = "ID del auto", required = true) @PathVariable("autoId") @NotNull Long autoId) {
         List<ar.edu.unq.pdss22025.models.Resena> resenas = resenaService.listarPorAuto(autoId);

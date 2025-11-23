@@ -59,7 +59,7 @@ class AuthControllerTest {
     }
 
     @Test
-    void login_forbidden() throws Exception {
+    void login_unauthorized() throws Exception {
         Mockito.when(usuarioService.autenticar(Mockito.anyString(), Mockito.anyString())).thenThrow(new CredencialesInvalidasException());
 
         String body = "{\"usuario\":\"test@test.com\",\"password\":\"wrong\"}";
@@ -67,7 +67,7 @@ class AuthControllerTest {
         mockMvc.perform(post("/auth/login")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(body))
-                .andExpect(status().isForbidden());
+                .andExpect(status().isUnauthorized());
     }
 }
 

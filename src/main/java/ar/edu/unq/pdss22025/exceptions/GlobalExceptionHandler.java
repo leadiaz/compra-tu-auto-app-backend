@@ -110,13 +110,27 @@ public class GlobalExceptionHandler {
             CredencialesInvalidasException ex, HttpServletRequest request) {
         
         ErrorResponse errorResponse = new ErrorResponse(
-                HttpStatus.FORBIDDEN.value(),
-                HttpStatus.FORBIDDEN.getReasonPhrase(),
+                HttpStatus.UNAUTHORIZED.value(),
+                HttpStatus.UNAUTHORIZED.getReasonPhrase(),
                 ex.getMessage() != null ? ex.getMessage() : "Credenciales inválidas",
                 request.getRequestURI()
         );
         
-        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(errorResponse);
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse);
+    }
+
+    @ExceptionHandler(EntidadNoEncontradaException.class)
+    public ResponseEntity<ErrorResponse> handleEntidadNoEncontradaException(
+            EntidadNoEncontradaException ex, HttpServletRequest request) {
+        
+        ErrorResponse errorResponse = new ErrorResponse(
+                HttpStatus.NOT_FOUND.value(),
+                HttpStatus.NOT_FOUND.getReasonPhrase(),
+                ex.getMessage() != null ? ex.getMessage() : "Entidad no encontrada",
+                request.getRequestURI()
+        );
+        
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
     }
 
     /**
@@ -131,20 +145,23 @@ public class GlobalExceptionHandler {
      * Determina el código de estado HTTP para IllegalStateException.
      * Si el mensaje contiene palabras relacionadas con reglas de negocio o restricciones,
      * retorna 422. De lo contrario, retorna 404.
+     * 
+     * Nota: "sin stock" y "precio no disponible" devuelven 404 porque son estados
+     * inconsistentes en la creación de compras, no reglas de negocio.
      */
     private HttpStatus determineStatusForIllegalState(String message) {
         if (message != null) {
             String lowerMessage = message.toLowerCase();
+            // Solo reglas de negocio específicas devuelven 422
             if (lowerMessage.contains("solo los usuarios") || 
                 lowerMessage.contains("pueden definir") ||
-                lowerMessage.contains("sin stock") ||
-                lowerMessage.contains("precio no disponible") ||
                 lowerMessage.contains("no permitido") ||
                 lowerMessage.contains("no puede") ||
                 lowerMessage.contains("regla")) {
                 return HttpStatus.UNPROCESSABLE_ENTITY;
             }
         }
+        // Por defecto, estados inconsistentes devuelven 404
         return HttpStatus.NOT_FOUND;
     }
 }

@@ -1,5 +1,6 @@
 package ar.edu.unq.pdss22025.services;
 
+import ar.edu.unq.pdss22025.exceptions.EntidadNoEncontradaException;
 import ar.edu.unq.pdss22025.models.Resena;
 import ar.edu.unq.pdss22025.models.usuario.UsuarioComprador;
 import ar.edu.unq.pdss22025.models.Auto;
@@ -157,8 +158,8 @@ class ResenaServiceTest {
         request.setRating(5);
 
         // When & Then
-        IllegalArgumentException exception = assertThrows(
-                IllegalArgumentException.class,
+        EntidadNoEncontradaException exception = assertThrows(
+                EntidadNoEncontradaException.class,
                 () -> resenaService.crear(request)
         );
         assertEquals("Auto no encontrado", exception.getMessage());
@@ -173,8 +174,8 @@ class ResenaServiceTest {
         request.setRating(5);
 
         // When & Then
-        IllegalArgumentException exception = assertThrows(
-                IllegalArgumentException.class,
+        EntidadNoEncontradaException exception = assertThrows(
+                EntidadNoEncontradaException.class,
                 () -> resenaService.crear(request)
         );
         assertEquals("Usuario no encontrado", exception.getMessage());
@@ -221,8 +222,8 @@ class ResenaServiceTest {
     @Test
     void listarPorAuto_ConAutoInexistente_DeberiaLanzarExcepcion() {
         // When & Then
-        IllegalArgumentException exception = assertThrows(
-                IllegalArgumentException.class,
+        EntidadNoEncontradaException exception = assertThrows(
+                EntidadNoEncontradaException.class,
                 () -> resenaService.listarPorAuto(999L)
         );
         assertEquals("Auto no encontrado", exception.getMessage());

@@ -13,9 +13,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import ar.edu.unq.pdss22025.models.dto.ErrorResponse;
 
 @RestController
 @RequestMapping("/auth")
@@ -34,7 +37,8 @@ public class AuthController {
     @Operation(summary = "Login", description = "Autentica un usuario por email y password y devuelve un token JWT junto con su UsuarioResponse")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Autenticación exitosa"),
-            @ApiResponse(responseCode = "403", description = "Credenciales inválidas")
+            @ApiResponse(responseCode = "401", description = "Credenciales inválidas",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest request) {
         Usuario usuario = usuarioService.autenticar(request.getUsuario(), request.getPassword());
