@@ -10,9 +10,12 @@ import ar.edu.unq.pdss22025.services.CompraService;
 import ar.edu.unq.pdss22025.services.FavoritoService;
 import ar.edu.unq.pdss22025.mapper.FavoritoMapper;
 import ar.edu.unq.pdss22025.services.UsuarioService;
+import ar.edu.unq.pdss22025.services.JwtService;
+import ar.edu.unq.pdss22025.services.UsuarioDetailsService;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -29,7 +32,10 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@WebMvcTest(UsuarioController.class)
+@WebMvcTest(controllers = UsuarioController.class, excludeAutoConfiguration = {
+    org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration.class
+})
+@AutoConfigureMockMvc(addFilters = false)
 class UsuarioControllerTest {
     @Autowired
     private MockMvc mockMvc;
@@ -44,6 +50,10 @@ class UsuarioControllerTest {
     private CompraService compraService;
     @MockitoBean
     private CompraMapper compraMapper;
+    @MockitoBean
+    private JwtService jwtService;
+    @MockitoBean
+    private UsuarioDetailsService usuarioDetailsService;
 
     @Test
     void setFavorito_ok() throws Exception {

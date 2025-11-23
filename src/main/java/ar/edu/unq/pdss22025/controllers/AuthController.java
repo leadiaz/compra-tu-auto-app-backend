@@ -1,11 +1,13 @@
 package ar.edu.unq.pdss22025.controllers;
 
 import ar.edu.unq.pdss22025.models.dto.LoginRequest;
+import ar.edu.unq.pdss22025.models.dto.LoginResponse;
 import ar.edu.unq.pdss22025.models.dto.UsuarioResponse;
 import ar.edu.unq.pdss22025.models.usuario.Usuario;
 import ar.edu.unq.pdss22025.models.usuario.UsuarioAdmin;
 import ar.edu.unq.pdss22025.models.usuario.UsuarioComprador;
 import ar.edu.unq.pdss22025.models.usuario.UsuarioConcesionaria;
+import ar.edu.unq.pdss22025.services.JwtService;
 import ar.edu.unq.pdss22025.services.UsuarioService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -21,20 +23,22 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 public class AuthController {
 
     private final UsuarioService usuarioService;
+    private final JwtService jwtService;
 
-    public AuthController(UsuarioService usuarioService) {
+    public AuthController(UsuarioService usuarioService, JwtService jwtService) {
         this.usuarioService = usuarioService;
+        this.jwtService = jwtService;
     }
 
     @PostMapping("/login")
-    @Operation(summary = "Login", description = "Autentica un usuario por email y password y devuelve su UsuarioResponse")
+    @Operation(summary = "Login", description = "Autentica un usuario por email y password y devuelve un token JWT junto con su UsuarioResponse")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Autenticación exitosa"),
             @ApiResponse(responseCode = "403", description = "Credenciales inválidas")
     })
-    public ResponseEntity<UsuarioResponse> login(@RequestBody LoginRequest request) {
+    public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest request) {
         Usuario usuario = usuarioService.autenticar(request.getUsuario(), request.getPassword());
-        UsuarioResponse response = new UsuarioResponse(
+        UsuarioResponse usuarioResponse = new UsuarioResponse(
                 usuario.getId(),
                 usuario.getEmail(),
                 usuario.getNombre(),
@@ -43,6 +47,10 @@ public class AuthController {
                 usuario.getActivo(),
                 tipoDe(usuario)
         );
+        
+        String token = jwtService.generateToken(usuario.getId(), usuario.getEmail(), tipoDe(usuario));
+        LoginResponse response = new LoginResponse(token, usuarioResponse);
+        
         return ResponseEntity.ok(response);
     }
 
