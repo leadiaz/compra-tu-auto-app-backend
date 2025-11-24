@@ -105,4 +105,10 @@ public abstract class Usuario {
         if (createdAt == null) createdAt = now;
         if (updatedAt == null) updatedAt = now;
     }
+
+    /**
+     * Obtiene el rol del usuario basado en su tipo de instancia.
+     * @return El rol correspondiente (COMPRADOR, CONCESIONARIA o ADMIN)
+     */
+    public abstract Rol getRol();
 }

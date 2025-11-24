@@ -26,7 +26,12 @@ public class UsuarioAdmin extends Usuario {
 
     @Override
     public String getTipoUsuario() {
-        return "ADMIN";
+        return this.getRol().name();
+    }
+
+    @Override
+    public Rol getRol() {
+        return Rol.ADMIN;
     }
 }
 

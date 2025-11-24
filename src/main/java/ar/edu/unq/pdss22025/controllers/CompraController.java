@@ -6,6 +6,7 @@ import ar.edu.unq.pdss22025.services.CompraService;
 import ar.edu.unq.pdss22025.mapper.CompraMapper;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import io.swagger.v3.oas.annotations.Operation;
@@ -30,6 +31,7 @@ public class CompraController {
     }
 
     @PostMapping
+    @PreAuthorize("hasRole('COMPRADOR') or hasRole('ADMIN')")
     @Operation(summary = "Crear compra", description = "Crea una compra a partir de una oferta y un comprador. Devuelve la compra creada.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Compra creada correctamente"),

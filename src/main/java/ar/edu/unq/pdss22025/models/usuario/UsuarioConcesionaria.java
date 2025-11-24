@@ -26,7 +26,12 @@ public class UsuarioConcesionaria extends Usuario {
 
     @Override
     public String getTipoUsuario() {
-        return "CONCESIONARIA";
+        return this.getRol().name();
+    }
+
+    @Override
+    public Rol getRol() {
+        return Rol.CONCESIONARIA;
     }
 }
 

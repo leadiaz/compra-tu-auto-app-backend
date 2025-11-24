@@ -26,7 +26,12 @@ public class UsuarioComprador extends Usuario {
 
     @Override
     public String getTipoUsuario() {
-        return "COMPRADOR";
+        return this.getRol().name();
+    }   
+
+    @Override
+    public Rol getRol() {
+        return Rol.COMPRADOR;
     }
 }
 

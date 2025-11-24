@@ -218,9 +218,12 @@ Responses:
 
 
 ### AuthController
-- POST /auth/login
 
-Descripción: autentica un usuario usando email (campo `usuario` en el body) y `password`. Devuelve un `UsuarioResponse` con los datos públicos del usuario si las credenciales son correctas.
+#### POST /auth/login
+
+Descripción: autentica un usuario usando email (campo `usuario` en el body) y `password`. Devuelve un token JWT y un `UsuarioResponse` con los datos públicos del usuario si las credenciales son correctas.
+
+**Este endpoint es público** y no requiere autenticación.
 
 Request body (LoginRequest):
 ```json
@@ -232,24 +235,150 @@ Request body (LoginRequest):
 
 Responses:
 - 200 OK
-  - Body: `UsuarioResponse` (ejemplo):
+  - Body: `LoginResponse`:
     ```json
     {
-      "id": 1,
-      "email": "test@test.com",
-      "nombre": "Test",
-      "apellido": "User",
-      "fechaAlta": "2025-10-16T12:34:56",
-      "activo": true,
-      "tipoUsuario": "COMPRADOR"
+      "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+      "usuario": {
+        "id": 1,
+        "email": "test@test.com",
+        "nombre": "Test",
+        "apellido": "User",
+        "fechaAlta": "2025-10-16T12:34:56",
+        "activo": true,
+        "tipoUsuario": "COMPRADOR"
+      }
     }
     ```
-- 401 Unauthorized: credenciales inválidas (por ejemplo, email no existente o password incorrecto).
+- 401 Unauthorized: credenciales inválidas.
 
-Notas de seguridad y uso:
-- Actualmente la autenticación compara el `password` tal cual con el almacenado en la base de datos; en un entorno real se debe almacenar el password hasheado (por ejemplo con BCrypt) y comparar hashes en lugar de texto plano.
-- Es común devolver un token (por ejemplo JWT) al autenticar para mantener sesión en clientes; si deseas que el endpoint retorne un token, puedo agregar esa funcionalidad.
-- El endpoint espera JSON con `Content-Type: application/json`.
+**Uso del token**: El token JWT devuelto debe incluirse en todas las requests subsiguientes en el header:
+```
+Authorization: Bearer <token>
+```
+
+
+## Autenticación y Autorización por Roles
+
+### Implementación
+
+El sistema implementa **autenticación JWT** y **autorización por roles** para garantizar que cada usuario solo pueda acceder a los recursos y operaciones permitidas según su rol.
+
+#### Componentes principales
+
+1. **Enum `Rol`**: Define los tres roles del sistema:
+   - `COMPRADOR`: Usuario comprador habitual
+   - `CONCESIONARIA`: Concesionaria que gestiona ofertas
+   - `ADMIN`: Administrador del sistema
+
+2. **Entidad `Usuario`**: 
+   - Contiene método `getRol()` que determina el rol basado en la instancia (UsuarioAdmin, UsuarioConcesionaria, UsuarioComprador)
+   - Password encriptado con BCrypt
+   - Email único
+
+3. **JWT Service (`JwtService`)**:
+   - Genera tokens JWT que incluyen: `userId`, `email` (subject) y `rol`
+   - Valida tokens y extrae información del usuario
+   - Tokens expiran después de 24 horas por defecto (configurable)
+
+4. **UsuarioDetailsService**:
+   - Implementa `UserDetailsService` de Spring Security
+   - Carga usuarios y asigna roles como autoridades (`ROLE_COMPRADOR`, `ROLE_CONCESIONARIA`, `ROLE_ADMIN`)
+
+5. **JwtAuthenticationFilter**:
+   - Filtro que intercepta cada request
+   - Extrae el token JWT del header `Authorization: Bearer <token>`
+   - Valida el token y establece el contexto de seguridad de Spring
+
+6. **SecurityConfig**:
+   - Configuración de seguridad de Spring Security
+   - Habilita `@PreAuthorize` para autorización a nivel de método
+   - Define rutas públicas (login, registro, Swagger)
+
+### Uso de tokens JWT
+
+Para acceder a endpoints protegidos, incluye el token JWT en el header de la request:
+
+```http
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+```
+
+### Autorización por roles
+
+Los endpoints están protegidos con `@PreAuthorize` según el rol requerido:
+
+#### Roles y permisos
+
+**COMPRADOR** puede:
+- ✅ Crear compras (`POST /compras`)
+- ✅ Crear reseñas (`POST /resenas`)
+- ✅ Ver reseñas (`GET /resenas/autos/{autoId}`)
+- ✅ Ver ofertas (`GET /ofertas`, `GET /ofertas/autos/{autoId}`)
+- ✅ Gestionar favoritos (`GET /usuarios/{id}/favorito`, `PUT /usuarios/{id}/favorito/{ofertaId}`)
+- ✅ Ver sus compras (`GET /usuarios/{id}/compras`)
+- ✅ Ver su propio perfil (`GET /usuarios/{id}` - solo su propio ID)
+
+**CONCESIONARIA** puede:
+- ✅ Ver ofertas (`GET /ofertas`, `GET /ofertas/autos/{autoId}`)
+- ✅ Ver reseñas (`GET /resenas/autos/{autoId}`)
+- ✅ Ver su propio perfil (`GET /usuarios/{id}` - solo su propio ID)
+- ❌ No puede crear compras, reseñas ni gestionar favoritos
+
+**ADMIN** puede:
+- ✅ Acceder a **todos** los endpoints
+- ✅ Ver todos los usuarios (`GET /usuarios`, `GET /usuarios/por-tipo/{tipo}`)
+- ✅ Ver cualquier usuario (`GET /usuarios/{id}`)
+- ✅ Ver compras, favoritos y reseñas de cualquier usuario
+
+### Tabla de permisos por endpoint
+
+| Endpoint | COMPRADOR | CONCESIONARIA | ADMIN |
+|----------|-----------|---------------|-------|
+| `POST /compras` | ✅ | ❌ | ✅ |
+| `POST /resenas` | ✅ | ❌ | ✅ |
+| `GET /resenas/autos/{autoId}` | ✅ | ✅ | ✅ |
+| `GET /ofertas` | ✅ | ✅ | ✅ |
+| `GET /ofertas/autos/{autoId}` | ✅ | ✅ | ✅ |
+| `GET /usuarios/{id}/favorito` | ✅ | ❌ | ✅ |
+| `PUT /usuarios/{id}/favorito/{ofertaId}` | ✅ | ❌ | ✅ |
+| `GET /usuarios/{id}/compras` | ✅ | ❌ | ✅ |
+| `GET /usuarios` | ❌ | ❌ | ✅ |
+| `GET /usuarios/por-tipo/{tipo}` | ❌ | ❌ | ✅ |
+| `GET /usuarios/{id}` | Solo propio | Solo propio | Cualquiera |
+| `POST /usuarios` | ✅ (público) | ✅ (público) | ✅ (público) |
+| `POST /auth/login` | ✅ (público) | ✅ (público) | ✅ (público) |
+
+### Seguridad implementada
+
+1. **Autenticación**:
+   - Passwords encriptados con BCrypt
+   - Tokens JWT firmados con clave secreta
+   - Validación de token en cada request
+
+2. **Autorización**:
+   - Validación de roles en el backend (independiente del frontend)
+   - `@PreAuthorize` en cada endpoint protegido
+   - Validación de acceso a recursos propios (ej: usuarios solo pueden ver su propio perfil)
+
+3. **Rutas públicas**:
+   - `/auth/login` - Autenticación
+   - `POST /usuarios` - Registro de nuevos usuarios
+   - `/swagger-ui/**`, `/v3/api-docs/**` - Documentación API
+
+### Configuración
+
+El token JWT se configura mediante propiedades en `application.properties`:
+
+```properties
+jwt.secret=MiClaveSecretaMuyLargaParaJWTQueDebeSerAlMenos256BitsParaHS256
+jwt.expiration=86400000  # 24 horas en milisegundos
+```
+
+**⚠️ Importante**: En producción, la clave secreta (`jwt.secret`) debe ser:
+- Al menos 256 bits de longitud
+- Generada de forma segura y aleatoria
+- Almacenada de forma segura (variables de entorno, secretos, etc.)
+- Nunca commitada en el repositorio
 
 
 ## Manejo de Excepciones
@@ -279,7 +408,9 @@ Todas las excepciones son manejadas por el `GlobalExceptionHandler` y retornan u
 - CrearResenaRequest: `autoId`, `usuarioId`, `rating`, `comentario`
 - ResenaResponse: `id`, `autoId`, `usuarioId`, `rating`, `comentario`, `createdAt`
 - CrearUsuarioRequest: `email`, `password`, `nombre`, `apellido`, `tipoUsuario`
-- UsuarioResponse: `id`, `email`, `nombre`, `apellido`, `createdAt`, `activo`, `tipo` (construido en controller)
+- UsuarioResponse: `id`, `email`, `nombre`, `apellido`, `createdAt`, `activo`, `tipoUsuario`
+- LoginRequest: `usuario` (email), `password`
+- LoginResponse: `token` (JWT), `usuario` (UsuarioResponse)
 - FavoritoResponse: `id`, `usuarioId`, `ofertaId`
 
 
