@@ -76,4 +76,22 @@ public class Usuario {
         if (createdAt == null) createdAt = now;
         if (updatedAt == null) updatedAt = now;
     }
+
+    /**
+     * Obtiene el rol del usuario basado en su tipo de instancia.
+     * @return El rol correspondiente (COMPRADOR, CONCESIONARIA o ADMIN)
+     */
+    public Rol getRol() {
+        if (this instanceof UsuarioAdmin) {
+            return Rol.ADMIN;
+        }
+        if (this instanceof UsuarioConcesionaria) {
+            return Rol.CONCESIONARIA;
+        }
+        if (this instanceof UsuarioComprador) {
+            return Rol.COMPRADOR;
+        }
+        // Fallback por defecto (no debería ocurrir en producción)
+        return Rol.COMPRADOR;
+    }
 }

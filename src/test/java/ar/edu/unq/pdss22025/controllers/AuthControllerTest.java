@@ -1,6 +1,7 @@
 package ar.edu.unq.pdss22025.controllers;
 
 import ar.edu.unq.pdss22025.exceptions.CredencialesInvalidasException;
+import ar.edu.unq.pdss22025.models.usuario.Rol;
 import ar.edu.unq.pdss22025.models.usuario.Usuario;
 import ar.edu.unq.pdss22025.services.UsuarioService;
 import ar.edu.unq.pdss22025.services.JwtService;
@@ -48,7 +49,8 @@ class AuthControllerTest {
         Mockito.when(usuario.getActivo()).thenReturn(true);
 
         Mockito.when(usuarioService.autenticar(Mockito.anyString(), Mockito.anyString())).thenReturn(usuario);
-        Mockito.when(jwtService.generateToken(Mockito.anyLong(), Mockito.anyString(), Mockito.anyString())).thenReturn("test-token");
+        Mockito.when(usuario.getRol()).thenReturn(Rol.COMPRADOR);
+        Mockito.when(jwtService.generateToken(Mockito.anyLong(), Mockito.anyString(), Mockito.any(Rol.class))).thenReturn("test-token");
 
         String body = "{\"usuario\":\"test@test.com\",\"password\":\"pwd\"}";
 

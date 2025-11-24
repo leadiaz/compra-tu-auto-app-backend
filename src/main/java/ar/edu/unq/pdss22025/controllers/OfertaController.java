@@ -5,6 +5,7 @@ import ar.edu.unq.pdss22025.services.OfertaService;
 import ar.edu.unq.pdss22025.mapper.OfertaMapper;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
@@ -31,6 +32,7 @@ public class OfertaController {
     }
 
     @GetMapping
+    @PreAuthorize("hasAnyRole('COMPRADOR', 'CONCESIONARIA', 'ADMIN')")
     @Operation(summary = "Listar ofertas por concesionaria", description = "Devuelve las ofertas asociadas a una concesionaria dada.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Listado de ofertas"),
@@ -45,6 +47,7 @@ public class OfertaController {
     }
 
     @GetMapping("/autos/{autoId}")
+    @PreAuthorize("hasAnyRole('COMPRADOR', 'CONCESIONARIA', 'ADMIN')")
     @Operation(summary = "Listar ofertas por auto", description = "Devuelve las ofertas disponibles para un auto específico.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Listado de ofertas para el auto"),
