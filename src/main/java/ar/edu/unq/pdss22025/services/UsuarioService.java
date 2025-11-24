@@ -2,6 +2,7 @@ package ar.edu.unq.pdss22025.services;
 
 import ar.edu.unq.pdss22025.exceptions.CredencialesInvalidasException;
 import ar.edu.unq.pdss22025.models.usuario.Usuario;
+import ar.edu.unq.pdss22025.models.usuario.menu.MenuItem;
 import ar.edu.unq.pdss22025.models.usuario.UsuarioAdmin;
 import ar.edu.unq.pdss22025.models.usuario.UsuarioComprador;
 import ar.edu.unq.pdss22025.models.usuario.UsuarioConcesionaria;
@@ -9,6 +10,8 @@ import ar.edu.unq.pdss22025.repositories.UsuarioAdminRepository;
 import ar.edu.unq.pdss22025.repositories.UsuarioCompradorRepository;
 import ar.edu.unq.pdss22025.repositories.UsuarioConcesionariaRepository;
 import ar.edu.unq.pdss22025.repositories.UsuarioRepository;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -62,6 +65,10 @@ public class UsuarioService {
         return usuarioRepository.findById(id);
     }
 
+    public Optional<Usuario> obtenerUsuarioPorEmail(String email) {
+        return usuarioRepository.findByEmail(email);
+    }
+
 
     public List<Usuario> obtenerUsuariosPorTipo(String tipoUsuario) {
         String tipo = (tipoUsuario == null ? "COMPRADOR" : tipoUsuario.trim().toUpperCase(Locale.ROOT));
@@ -77,5 +84,27 @@ public class UsuarioService {
         return usuarioRepository.findByEmail(email)
                 .filter(u -> u.getPassword() != null && passwordEncoder.matches(password, u.getPassword()))
                 .orElseThrow(() -> new CredencialesInvalidasException());
+    }
+
+    /**
+     * Obtiene el usuario autenticado desde el SecurityContext.
+     * @return Optional con el usuario autenticado, o empty si no está autenticado
+     */
+    public Optional<Usuario> obtenerUsuarioAutenticado() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return Optional.empty();
+        }
+        String email = authentication.getName();
+        return obtenerUsuarioPorEmail(email);
+    }
+
+    /**
+     * Obtiene el menú del usuario autenticado.
+     * @return Optional con la lista de items del menú, o empty si no está autenticado o no se encuentra el usuario
+     */
+    public Optional<List<MenuItem>> obtenerMenuUsuarioAutenticado() {
+        return obtenerUsuarioAutenticado()
+                .map(Usuario::getMenuItems);
     }
 }

@@ -1,6 +1,8 @@
 package ar.edu.unq.pdss22025.models.usuario;
 
 import ar.edu.unq.pdss22025.models.Concesionaria;
+import ar.edu.unq.pdss22025.models.usuario.menu.MenuItem;
+import ar.edu.unq.pdss22025.models.usuario.menu.Menu;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -11,6 +13,7 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.OffsetDateTime;
+import java.util.List;
 
 @Entity
 @Table(name = "usuario", indexes = {
@@ -20,12 +23,9 @@ import java.time.OffsetDateTime;
 @DiscriminatorColumn(name = "dtype", length = 20)
 @Getter
 @Setter
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @EntityListeners(AuditingEntityListener.class)
-public class Usuario {
+public abstract class Usuario {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -52,7 +52,6 @@ public class Usuario {
 
     @NotNull
     @Column(name = "activo", nullable = false)
-    @Builder.Default
     private Boolean activo = Boolean.TRUE;
 
     // Relación uno a uno con Concesionaria
@@ -61,6 +60,36 @@ public class Usuario {
     private Concesionaria concesionaria;
 
     // Nota: La relación con Favorito se elimina de la clase base. Solo UsuarioComprador podrá tenerla.
+
+    // Menú del usuario (no persistente, se inicializa según el tipo de usuario)
+    @Transient
+    @Getter
+    @Setter
+    protected Menu menu;
+
+    /**
+     * Obtiene el menú del usuario según su tipo.
+     * @return Lista de items del menú
+     */
+    public List<MenuItem> getMenuItems() {
+        if (menu == null) {
+            initializeMenu();
+        }
+        return menu != null ? menu.getMenu() : List.of();
+    }
+
+    /**
+     * Inicializa el menú según el tipo de usuario.
+     * Cada clase hija debe implementar este método para inicializar su menú específico.
+     */
+    protected abstract void initializeMenu();
+
+    /**
+     * Retorna el tipo de usuario como String.
+     * Cada clase hija debe implementar este método para retornar su tipo específico.
+     * @return El tipo de usuario (ADMIN, CONCESIONARIA, COMPRADOR)
+     */
+    public abstract String getTipoUsuario();
 
     @CreatedDate
     @Column(name = "created_at", nullable = false, updatable = false)
