@@ -7,14 +7,14 @@ import ar.edu.unq.pdss22025.models.dto.CompraResponse;
 import ar.edu.unq.pdss22025.services.CompraService;
 import ar.edu.unq.pdss22025.mapper.CompraMapper;
 import ar.edu.unq.pdss22025.models.usuario.Usuario;
-import ar.edu.unq.pdss22025.models.usuario.UsuarioAdmin;
-import ar.edu.unq.pdss22025.models.usuario.UsuarioComprador;
-import ar.edu.unq.pdss22025.models.usuario.UsuarioConcesionaria;
 import ar.edu.unq.pdss22025.models.dto.CrearUsuarioRequest;
 import ar.edu.unq.pdss22025.models.dto.UsuarioResponse;
 import ar.edu.unq.pdss22025.services.UsuarioService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -48,6 +48,7 @@ public class UsuarioController {
         this.favoritoMapper = favoritoMapper;
     }
     @GetMapping("/{usuarioId}/favorito")
+    @PreAuthorize("hasRole('COMPRADOR') or hasRole('ADMIN')")
     @Operation(summary = "Obtener favorito del usuario", description = "Obtiene el favorito de un usuario si existe.")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Favorito encontrado"),
@@ -61,6 +62,7 @@ public class UsuarioController {
     }
 
     @PutMapping("/{usuarioId}/favorito/{ofertaId}")
+    @PreAuthorize("hasRole('COMPRADOR') or hasRole('ADMIN')")
     @Operation(summary = "Definir favorito", description = "Define la oferta indicada como favorito del usuario.")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Favorito creado o actualizado"),
@@ -76,6 +78,7 @@ public class UsuarioController {
         return ResponseEntity.ok(favoritoMapper.toResponse(favorito));
     }
     @GetMapping("/{usuarioId}/compras")
+    @PreAuthorize("hasRole('COMPRADOR') or hasRole('ADMIN')")
     @Operation(summary = "Listar compras por usuario", description = "Lista las compras realizadas por un usuario.")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Listado de compras"),
@@ -117,6 +120,7 @@ public class UsuarioController {
     }
     
     @GetMapping
+    @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Listar usuarios", description = "Devuelve todos los usuarios del sistema.")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Listado de usuarios")
@@ -138,13 +142,29 @@ public class UsuarioController {
     }
     
     @GetMapping("/{id}")
-    @Operation(summary = "Obtener usuario por id", description = "Devuelve un usuario por su id.")
+    @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "Obtener usuario por id", description = "Devuelve un usuario por su id. Solo ADMIN puede acceder a cualquier usuario. Los demás usuarios pueden acceder a su propio perfil.")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Usuario encontrado"),
+        @ApiResponse(responseCode = "403", description = "No autorizado para ver este usuario"),
         @ApiResponse(responseCode = "404", description = "Usuario no encontrado",
                 content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     public ResponseEntity<UsuarioResponse> obtenerUsuarioPorId(@Parameter(description = "ID del usuario", required = true) @PathVariable Long id) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        boolean isAdmin = auth != null && auth.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+        
+        // Si no es admin, verificar que está consultando su propio usuario
+        if (!isAdmin && auth != null) {
+            String email = auth.getName();
+            Usuario usuarioAutenticado = usuarioService.obtenerUsuarioPorId(id)
+                    .orElse(null);
+            if (usuarioAutenticado == null || !usuarioAutenticado.getEmail().equals(email)) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            }
+        }
+        
         return usuarioService.obtenerUsuarioPorId(id)
                 .map(usuario -> {
                     UsuarioResponse response = new UsuarioResponse(
@@ -162,6 +182,7 @@ public class UsuarioController {
     }
     
     @GetMapping("/por-tipo/{tipoUsuario}")
+    @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Listar usuarios por tipo", description = "Filtra usuarios por tipo (ADMIN | CONCESIONARIA | COMPRADOR).")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Listado filtrado"),
@@ -185,9 +206,6 @@ public class UsuarioController {
     }
 
     private String tipoDe(Usuario u) {
-        if (u instanceof UsuarioAdmin) return "ADMIN";
-        if (u instanceof UsuarioConcesionaria) return "CONCESIONARIA";
-        if (u instanceof UsuarioComprador) return "COMPRADOR";
-        return "USUARIO";
+        return u.getRol().name();
     }
 }

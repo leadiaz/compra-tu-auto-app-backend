@@ -3,10 +3,8 @@ package ar.edu.unq.pdss22025.controllers;
 import ar.edu.unq.pdss22025.models.dto.LoginRequest;
 import ar.edu.unq.pdss22025.models.dto.LoginResponse;
 import ar.edu.unq.pdss22025.models.dto.UsuarioResponse;
+import ar.edu.unq.pdss22025.models.usuario.Rol;
 import ar.edu.unq.pdss22025.models.usuario.Usuario;
-import ar.edu.unq.pdss22025.models.usuario.UsuarioAdmin;
-import ar.edu.unq.pdss22025.models.usuario.UsuarioComprador;
-import ar.edu.unq.pdss22025.models.usuario.UsuarioConcesionaria;
 import ar.edu.unq.pdss22025.services.JwtService;
 import ar.edu.unq.pdss22025.services.UsuarioService;
 import org.springframework.http.ResponseEntity;
@@ -42,6 +40,8 @@ public class AuthController {
     })
     public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest request) {
         Usuario usuario = usuarioService.autenticar(request.getUsuario(), request.getPassword());
+        Rol rol = usuario.getRol();
+        
         UsuarioResponse usuarioResponse = new UsuarioResponse(
                 usuario.getId(),
                 usuario.getEmail(),
@@ -49,20 +49,13 @@ public class AuthController {
                 usuario.getApellido(),
                 usuario.getCreatedAt() != null ? usuario.getCreatedAt().toLocalDateTime() : null,
                 usuario.getActivo(),
-                tipoDe(usuario)
+                rol.name()
         );
         
-        String token = jwtService.generateToken(usuario.getId(), usuario.getEmail(), tipoDe(usuario));
+        String token = jwtService.generateToken(usuario.getId(), usuario.getEmail(), rol);
         LoginResponse response = new LoginResponse(token, usuarioResponse);
         
         return ResponseEntity.ok(response);
-    }
-
-    private String tipoDe(Usuario u) {
-        if (u instanceof UsuarioAdmin) return "ADMIN";
-        if (u instanceof UsuarioConcesionaria) return "CONCESIONARIA";
-        if (u instanceof UsuarioComprador) return "COMPRADOR";
-        return "USUARIO";
     }
 }
 

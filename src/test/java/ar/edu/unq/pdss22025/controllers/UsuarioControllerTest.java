@@ -18,6 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -137,6 +138,7 @@ class UsuarioControllerTest {
         Mockito.when(usuario.getApellido()).thenReturn("User");
         Mockito.when(usuario.getCreatedAt()).thenReturn(OffsetDateTime.now());
         Mockito.when(usuario.getActivo()).thenReturn(true);
+        Mockito.when(usuario.getRol()).thenReturn(ar.edu.unq.pdss22025.models.usuario.Rol.COMPRADOR);
         Mockito.when(usuarioService.crearUsuario(Mockito.anyString(), Mockito.anyString(), Mockito.anyString(), Mockito.anyString(), Mockito.anyString())).thenReturn(usuario);
         String body = "{\"email\":\"test@test.com\",\"password\":\"pwd\",\"nombre\":\"Test\",\"apellido\":\"User\",\"tipoUsuario\":\"COMPRADOR\"}";
         mockMvc.perform(
@@ -158,6 +160,7 @@ class UsuarioControllerTest {
     }
 
     @Test
+    @WithMockUser(roles = "ADMIN")
     void obtenerTodosLosUsuarios_ok() throws Exception {
         Usuario usuario = Mockito.mock(Usuario.class);
         Mockito.when(usuario.getId()).thenReturn(1L);
@@ -166,6 +169,7 @@ class UsuarioControllerTest {
         Mockito.when(usuario.getApellido()).thenReturn("User");
         Mockito.when(usuario.getCreatedAt()).thenReturn(OffsetDateTime.now());
         Mockito.when(usuario.getActivo()).thenReturn(true);
+        Mockito.when(usuario.getRol()).thenReturn(ar.edu.unq.pdss22025.models.usuario.Rol.COMPRADOR);
         Mockito.when(usuarioService.obtenerTodosLosUsuarios()).thenReturn(List.of(usuario));
         mockMvc.perform(
                 get("/usuarios")
@@ -173,6 +177,7 @@ class UsuarioControllerTest {
     }
 
     @Test
+    @WithMockUser(username = "test@test.com", roles = "ADMIN")
     void obtenerUsuarioPorId_ok() throws Exception {
         Usuario usuario = Mockito.mock(Usuario.class);
         Mockito.when(usuario.getId()).thenReturn(1L);
@@ -181,6 +186,7 @@ class UsuarioControllerTest {
         Mockito.when(usuario.getApellido()).thenReturn("User");
         Mockito.when(usuario.getCreatedAt()).thenReturn(OffsetDateTime.now());
         Mockito.when(usuario.getActivo()).thenReturn(true);
+        Mockito.when(usuario.getRol()).thenReturn(ar.edu.unq.pdss22025.models.usuario.Rol.COMPRADOR);
         Mockito.when(usuarioService.obtenerUsuarioPorId(1L)).thenReturn(Optional.of(usuario));
         mockMvc.perform(
                 get("/usuarios/1")
@@ -196,6 +202,7 @@ class UsuarioControllerTest {
     }
 
     @Test
+    @WithMockUser(roles = "ADMIN")
     void obtenerUsuariosPorTipo_ok() throws Exception {
         Usuario usuario = Mockito.mock(Usuario.class);
         Mockito.when(usuario.getId()).thenReturn(1L);
@@ -204,6 +211,7 @@ class UsuarioControllerTest {
         Mockito.when(usuario.getApellido()).thenReturn("User");
         Mockito.when(usuario.getCreatedAt()).thenReturn(OffsetDateTime.now());
         Mockito.when(usuario.getActivo()).thenReturn(true);
+        Mockito.when(usuario.getRol()).thenReturn(ar.edu.unq.pdss22025.models.usuario.Rol.COMPRADOR);
         Mockito.when(usuarioService.obtenerUsuariosPorTipo("COMPRADOR")).thenReturn(List.of(usuario));
         mockMvc.perform(
                 get("/usuarios/por-tipo/COMPRADOR")

@@ -1,5 +1,6 @@
 package ar.edu.unq.pdss22025.services;
 
+import ar.edu.unq.pdss22025.models.usuario.Rol;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
@@ -65,11 +66,29 @@ public class JwtService {
         }
     }
 
-    public String generateToken(Long userId, String email, String tipoUsuario) {
+    public String generateToken(Long userId, String email, Rol rol) {
         Map<String, Object> claims = new HashMap<>();
         claims.put("userId", userId);
-        claims.put("tipoUsuario", tipoUsuario);
+        claims.put("rol", rol.name());
         return createToken(claims, email);
+    }
+
+    /**
+     * Extrae el rol del token JWT.
+     * @param token Token JWT
+     * @return El rol del usuario o null si no se puede extraer
+     */
+    public Rol extractRol(String token) {
+        try {
+            Claims claims = extractAllClaims(token);
+            String rolStr = claims.get("rol", String.class);
+            if (rolStr != null) {
+                return Rol.valueOf(rolStr);
+            }
+            return null;
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     private String createToken(Map<String, Object> claims, String subject) {
