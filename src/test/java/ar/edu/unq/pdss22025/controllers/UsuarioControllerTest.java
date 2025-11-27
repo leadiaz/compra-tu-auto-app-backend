@@ -26,6 +26,10 @@ import java.time.OffsetDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import ar.edu.unq.pdss22025.models.usuario.UsuarioComprador;
+import ar.edu.unq.pdss22025.models.usuario.UsuarioConcesionaria;
+import ar.edu.unq.pdss22025.models.usuario.UsuarioAdmin;
+import ar.edu.unq.pdss22025.models.usuario.menu.MenuItem;
 
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -224,5 +228,101 @@ class UsuarioControllerTest {
         mockMvc.perform(
                 get("/usuarios/por-tipo/COMPRADOR")
         ).andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @WithMockUser(roles = "COMPRADOR")
+    void obtenerMiMenu_comprador_ok() throws Exception {
+        UsuarioComprador usuario = new UsuarioComprador();
+        usuario.setEmail("comprador@test.com");
+        usuario.setId(1L);
+        
+        List<MenuItem> menuItems = usuario.getMenuItems();
+        
+        Mockito.when(usuarioService.obtenerMenuUsuarioAutenticado())
+                .thenReturn(Optional.of(menuItems));
+        
+        mockMvc.perform(
+                get("/usuarios/mi-menu")
+        )
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.items").isArray())
+        .andExpect(jsonPath("$.items.length()").value(3))
+        .andExpect(jsonPath("$.items[0].label").value("Ofertas"))
+        .andExpect(jsonPath("$.items[0].icon").value("shopping-cart"))
+        .andExpect(jsonPath("$.items[0].route").value("/dashboard/ofertas"))
+        .andExpect(jsonPath("$.items[0].orden").value(1));
+    }
+
+    @Test
+    @WithMockUser(roles = "CONCESIONARIA")
+    void obtenerMiMenu_concesionaria_ok() throws Exception {
+        UsuarioConcesionaria usuario = new UsuarioConcesionaria();
+        usuario.setEmail("concesionaria@test.com");
+        usuario.setId(2L);
+        
+        List<MenuItem> menuItems = usuario.getMenuItems();
+        
+        Mockito.when(usuarioService.obtenerMenuUsuarioAutenticado())
+                .thenReturn(Optional.of(menuItems));
+        
+        mockMvc.perform(
+                get("/usuarios/mi-menu")
+        )
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.items").isArray())
+        .andExpect(jsonPath("$.items.length()").value(4))
+        .andExpect(jsonPath("$.items[0].label").value("Mis Ofertas"))
+        .andExpect(jsonPath("$.items[0].icon").value("store"))
+        .andExpect(jsonPath("$.items[0].route").value("/ofertas"))
+        .andExpect(jsonPath("$.items[0].orden").value(1));
+    }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    void obtenerMiMenu_admin_ok() throws Exception {
+        UsuarioAdmin usuario = new UsuarioAdmin();
+        usuario.setEmail("admin@test.com");
+        usuario.setId(3L);
+        
+        List<MenuItem> menuItems = usuario.getMenuItems();
+        
+        Mockito.when(usuarioService.obtenerMenuUsuarioAutenticado())
+                .thenReturn(Optional.of(menuItems));
+        
+        mockMvc.perform(
+                get("/usuarios/mi-menu")
+        )
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.items").isArray())
+        .andExpect(jsonPath("$.items.length()").value(7))
+        .andExpect(jsonPath("$.items[0].label").value("Usuarios"))
+        .andExpect(jsonPath("$.items[0].icon").value("users"))
+        .andExpect(jsonPath("$.items[0].route").value("/usuarios"))
+        .andExpect(jsonPath("$.items[0].orden").value(1));
+    }
+
+    @Test
+    void obtenerMiMenu_noAutenticado_unauthorized() throws Exception {
+        Mockito.when(usuarioService.obtenerMenuUsuarioAutenticado())
+                .thenReturn(Optional.empty());
+        
+        mockMvc.perform(
+                get("/usuarios/mi-menu")
+        )
+        .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void obtenerMiMenu_usuarioNoEncontrado_unauthorized() throws Exception {
+        // Cuando el usuario no se encuentra, el servicio retorna Optional.empty()
+        // que se traduce en 401 UNAUTHORIZED
+        Mockito.when(usuarioService.obtenerMenuUsuarioAutenticado())
+                .thenReturn(Optional.empty());
+        
+        mockMvc.perform(
+                get("/usuarios/mi-menu")
+        )
+        .andExpect(status().isUnauthorized());
     }
 }

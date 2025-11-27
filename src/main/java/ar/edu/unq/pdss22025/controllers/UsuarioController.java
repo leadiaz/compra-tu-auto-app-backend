@@ -8,6 +8,7 @@ import ar.edu.unq.pdss22025.services.CompraService;
 import ar.edu.unq.pdss22025.mapper.CompraMapper;
 import ar.edu.unq.pdss22025.models.usuario.Usuario;
 import ar.edu.unq.pdss22025.models.dto.CrearUsuarioRequest;
+import ar.edu.unq.pdss22025.models.dto.MenuResponse;
 import ar.edu.unq.pdss22025.models.dto.UsuarioResponse;
 import ar.edu.unq.pdss22025.services.UsuarioService;
 import org.springframework.http.HttpStatus;
@@ -114,7 +115,7 @@ public class UsuarioController {
             usuario.getApellido(),
             usuario.getCreatedAt() != null ? usuario.getCreatedAt().toLocalDateTime() : null,
             usuario.getActivo(),
-            tipoDe(usuario)
+            usuario.getTipoUsuario()
         );
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
@@ -135,7 +136,7 @@ public class UsuarioController {
                     usuario.getApellido(),
                     usuario.getCreatedAt() != null ? usuario.getCreatedAt().toLocalDateTime() : null,
                     usuario.getActivo(),
-                    tipoDe(usuario)
+                    usuario.getTipoUsuario()
                 ))
                 .collect(Collectors.toList());
         return ResponseEntity.ok(responses);
@@ -174,7 +175,7 @@ public class UsuarioController {
                         usuario.getApellido(),
                         usuario.getCreatedAt() != null ? usuario.getCreatedAt().toLocalDateTime() : null,
                         usuario.getActivo(),
-                        tipoDe(usuario)
+                        usuario.getTipoUsuario()
                     );
                     return ResponseEntity.ok(response);
                 })
@@ -199,13 +200,32 @@ public class UsuarioController {
                     usuario.getApellido(),
                     usuario.getCreatedAt() != null ? usuario.getCreatedAt().toLocalDateTime() : null,
                     usuario.getActivo(),
-                    tipoDe(usuario)
+                    usuario.getTipoUsuario()
                 ))
                 .collect(Collectors.toList());
         return ResponseEntity.ok(responses);
     }
 
-    private String tipoDe(Usuario u) {
-        return u.getRol().name();
+    @GetMapping("/mi-menu")
+    @PreAuthorize("hasAnyRole('COMPRADOR', 'CONCESIONARIA', 'ADMIN')")
+    @Operation(summary = "Obtener menú del usuario autenticado", description = "Obtiene el menú del usuario actualmente autenticado según su rol.")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Menú obtenido exitosamente"),
+        @ApiResponse(responseCode = "401", description = "No autenticado",
+                content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+        @ApiResponse(responseCode = "403", description = "No autorizado",
+                content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+        @ApiResponse(responseCode = "404", description = "Usuario no encontrado",
+                content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    })
+    public ResponseEntity<MenuResponse> obtenerMiMenu() {
+        return usuarioService.obtenerMenuUsuarioAutenticado()
+                .map(items -> {
+                    MenuResponse response = MenuResponse.builder()
+                            .items(items)
+                            .build();
+                    return ResponseEntity.ok(response);
+                })
+                .orElse(ResponseEntity.status(HttpStatus.UNAUTHORIZED).build());
     }
 }
