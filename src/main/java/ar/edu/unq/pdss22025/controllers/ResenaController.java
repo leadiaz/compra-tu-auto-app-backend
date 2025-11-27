@@ -96,7 +96,7 @@ public class ResenaController {
         Usuario usuario = usuarioService.obtenerUsuarioAutenticado()
                 .orElseThrow(() -> new IllegalStateException("Usuario no autenticado"));
         
-        Resena resena = resenaService.crearReseña(
+        Resena resena = resenaService.crearResenha(
                 usuario.getId(), 
                 request.getAutoId(), 
                 request.getPuntaje(), 

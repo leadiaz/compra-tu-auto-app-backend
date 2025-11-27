@@ -71,7 +71,7 @@ class ResenaServiceTest {
         });
 
         // Act
-        Resena resultado = resenaService.crearReseña(1L, 1L, 8, "Excelente auto");
+        Resena resultado = resenaService.crearResenha(1L, 1L, 8, "Excelente auto");
 
         // Assert
         assertNotNull(resultado);
@@ -86,7 +86,7 @@ class ResenaServiceTest {
     void crearReseña_PuntajeMenorACero_DeberiaLanzarExcepcion() {
         // Act & Assert
         assertThrows(PuntajeInvalidoException.class, () -> {
-            resenaService.crearReseña(1L, 1L, -1, "Comentario");
+            resenaService.crearResenha(1L, 1L, -1, "Comentario");
         });
     }
 
@@ -94,7 +94,7 @@ class ResenaServiceTest {
     void crearReseña_PuntajeMayorADiez_DeberiaLanzarExcepcion() {
         // Act & Assert
         assertThrows(PuntajeInvalidoException.class, () -> {
-            resenaService.crearReseña(1L, 1L, 11, "Comentario");
+            resenaService.crearResenha(1L, 1L, 11, "Comentario");
         });
     }
 
@@ -107,7 +107,7 @@ class ResenaServiceTest {
 
         // Act & Assert
         assertThrows(ResenaYaExisteException.class, () -> {
-            resenaService.crearReseña(1L, 1L, 8, "Comentario");
+            resenaService.crearResenha(1L, 1L, 8, "Comentario");
         });
     }
 

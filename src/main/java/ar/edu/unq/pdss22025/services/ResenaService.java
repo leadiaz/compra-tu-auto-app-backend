@@ -44,7 +44,7 @@ public class ResenaService {
      * Valida que el puntaje esté en rango y que no exista ya una reseña del usuario para ese auto.
      */
     @Transactional
-    public Resena crearReseña(Long usuarioId, Long autoId, int puntaje, String comentario) {
+    public Resena crearResenha(Long usuarioId, Long autoId, int puntaje, String comentario) {
         // Validar rango de puntaje
         if (puntaje < 0 || puntaje > 10) {
             throw new PuntajeInvalidoException("El puntaje debe estar entre 0 y 10");

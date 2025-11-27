@@ -47,7 +47,7 @@ class ResenaControllerTest {
         Resena resena = new Resena();
         ResenaResponse response = new ResenaResponse();
         Mockito.when(usuarioService.obtenerUsuarioAutenticado()).thenReturn(Optional.of(usuario));
-        Mockito.when(resenaService.crearReseña(Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(), Mockito.anyString())).thenReturn(resena);
+        Mockito.when(resenaService.crearResenha(Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(), Mockito.anyString())).thenReturn(resena);
         Mockito.when(resenaMapper.toResponse(resena)).thenReturn(response);
         mockMvc.perform(post("/resenas")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -60,7 +60,7 @@ class ResenaControllerTest {
         UsuarioComprador usuario = new UsuarioComprador();
         usuario.setId(1L);
         Mockito.when(usuarioService.obtenerUsuarioAutenticado()).thenReturn(Optional.of(usuario));
-        Mockito.when(resenaService.crearReseña(Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(), Mockito.anyString()))
+        Mockito.when(resenaService.crearResenha(Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(), Mockito.anyString()))
                 .thenThrow(new ar.edu.unq.pdss22025.exceptions.EntidadNoEncontradaException("Auto no encontrado"));
         mockMvc.perform(post("/resenas")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -73,7 +73,7 @@ class ResenaControllerTest {
         UsuarioComprador usuario = new UsuarioComprador();
         usuario.setId(1L);
         Mockito.when(usuarioService.obtenerUsuarioAutenticado()).thenReturn(Optional.of(usuario));
-        Mockito.when(resenaService.crearReseña(Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(), Mockito.anyString()))
+        Mockito.when(resenaService.crearResenha(Mockito.anyLong(), Mockito.anyLong(), Mockito.anyInt(), Mockito.anyString()))
                 .thenThrow(new ar.edu.unq.pdss22025.exceptions.ResenaYaExisteException("Ya existe una reseña"));
         mockMvc.perform(post("/resenas")
                 .contentType(MediaType.APPLICATION_JSON)
