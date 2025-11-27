@@ -1,4 +1,4 @@
-name: CI - Spring Boot (Maven)
+name: CI - Spring Boot (Maven + SonarCloud)
 
 on:
   pull_request:
@@ -10,15 +10,21 @@ concurrency:
 
 jobs:
   build-test:
-    name: Build & Test (Java 17)
+    name: Build, Test & Analyze (Java 17)
     runs-on: ubuntu-latest
 
+    # Necesario para que SonarCloud pueda decorar el PR
     permissions:
       contents: read
+      pull-requests: write
+      checks: write
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          # Recomendado por SonarCloud para tener info de historial
+          fetch-depth: 0
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4
@@ -27,16 +33,15 @@ jobs:
           java-version: 17
           cache: maven
 
-      - name: Maven Verify (compile + tests + checks)
-        run: mvn -B -ntp clean verify
-
-      # (Opcional) Publicar el JAR como artefacto del PR
-      # - name: Upload artifact
-      #   if: success()
-      #   uses: actions/upload-artifact@v4
-      #   with:
-      #     name: app-jar
-      #     path: |
-      #       **/target/*.jar
-      #       !**/*-sources.jar
-      #       !**/*-javadoc.jar
+      - name: Build, Test & SonarCloud analysis
+        env:
+          # Token definido en Settings > Secrets and variables > Actions
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          # Token de GitHub para que SonarCloud pueda comentar/decorar el PR
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          mvn -B -ntp clean verify \
+            org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
+            -Dsonar.host.url=https://sonarcloud.io \
+            -Dsonar.organization=leadiaz \
+            -Dsonar.projectKey=compra-tu-auto-app-backend
