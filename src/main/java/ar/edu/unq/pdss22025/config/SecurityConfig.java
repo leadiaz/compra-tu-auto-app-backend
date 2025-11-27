@@ -38,8 +38,13 @@ public class SecurityConfig {
                 // Rutas públicas
                 .requestMatchers("/auth/login").permitAll()
                 .requestMatchers(org.springframework.http.HttpMethod.POST, "/usuarios").permitAll() // POST para crear usuario
-                // Swagger/OpenAPI
-                .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-resources/**").permitAll()
+                // Swagger/OpenAPI - permitir todas las variantes (rutas relativas al context-path)
+                .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/swagger-ui/index.html").permitAll()
+                .requestMatchers("/v3/api-docs/**", "/v3/api-docs", "/v3/api-docs.yaml", "/v3/api-docs.yaml/**").permitAll()
+                .requestMatchers("/swagger-resources/**", "/swagger-resources").permitAll()
+                .requestMatchers("/webjars/**", "/webjars/swagger-ui/**").permitAll()
+                .requestMatchers("/favicon.ico").permitAll()
+                .requestMatchers("/actuator/**").permitAll() // Si usas actuator
                 // Todas las demás rutas requieren autenticación
                 .anyRequest().authenticated()
             )

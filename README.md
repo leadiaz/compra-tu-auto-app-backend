@@ -508,8 +508,8 @@ Las migraciones en `src/main/resources/db/migration` están escritas pensando en
 
 Si ejecutas la aplicación con la dependencia de `springdoc-openapi`, la documentación OpenAPI y la UI de Swagger quedan disponibles por defecto en:
 
-- Swagger UI (interfaz web): http://localhost:8080/swagger-ui.html
-- Alternativa: http://localhost:8080/swagger-ui/index.html
-- OpenAPI JSON: http://localhost:8080/v3/api-docs
+- Swagger UI (interfaz web): http://localhost:8080/api/1/compra-tu-auto/swagger-ui.html
+- Alternativa: http://localhost:8080/api/1/compra-tu-auto/swagger-ui/index.html
+- OpenAPI JSON: http://localhost:8080/api/1/compra-tu-auto/v3/api-docs
 
 Ejecuta la app (dev o configuración por defecto) y abre la URL en tu navegador para explorar y probar los endpoints desde la UI.
