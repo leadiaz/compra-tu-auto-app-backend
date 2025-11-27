@@ -231,6 +231,7 @@ class UsuarioControllerTest {
     }
 
     @Test
+    @WithMockUser(roles = "COMPRADOR")
     void obtenerMiMenu_comprador_ok() throws Exception {
         UsuarioComprador usuario = new UsuarioComprador();
         usuario.setEmail("comprador@test.com");
@@ -254,6 +255,7 @@ class UsuarioControllerTest {
     }
 
     @Test
+    @WithMockUser(roles = "CONCESIONARIA")
     void obtenerMiMenu_concesionaria_ok() throws Exception {
         UsuarioConcesionaria usuario = new UsuarioConcesionaria();
         usuario.setEmail("concesionaria@test.com");
@@ -277,6 +279,7 @@ class UsuarioControllerTest {
     }
 
     @Test
+    @WithMockUser(roles = "ADMIN")
     void obtenerMiMenu_admin_ok() throws Exception {
         UsuarioAdmin usuario = new UsuarioAdmin();
         usuario.setEmail("admin@test.com");

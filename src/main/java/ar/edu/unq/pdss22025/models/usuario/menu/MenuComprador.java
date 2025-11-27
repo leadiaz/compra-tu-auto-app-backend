@@ -15,29 +15,22 @@ public class MenuComprador implements Menu {
         items.add(MenuItem.builder()
                 .label("Ofertas")
                 .icon("shopping-cart")
-                .route("/ofertas")
+                .route("/dashboard/ofertas")
                 .orden(1)
                 .build());
         
         items.add(MenuItem.builder()
                 .label("Mi Favorito")
                 .icon("heart")
-                .route("/favorito")
+                .route("/dashboard/favoritos")
                 .orden(2)
                 .build());
         
         items.add(MenuItem.builder()
                 .label("Mis Compras")
                 .icon("receipt")
-                .route("/compras")
+                .route("/dashboard/mis-compras")
                 .orden(3)
-                .build());
-        
-        items.add(MenuItem.builder()
-                .label("Reseñas")
-                .icon("star")
-                .route("/resenas")
-                .orden(4)
                 .build());
         
         return items;

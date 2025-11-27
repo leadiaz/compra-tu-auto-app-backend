@@ -207,10 +207,13 @@ public class UsuarioController {
     }
 
     @GetMapping("/mi-menu")
+    @PreAuthorize("hasAnyRole('COMPRADOR', 'CONCESIONARIA', 'ADMIN')")
     @Operation(summary = "Obtener menú del usuario autenticado", description = "Obtiene el menú del usuario actualmente autenticado según su rol.")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Menú obtenido exitosamente"),
         @ApiResponse(responseCode = "401", description = "No autenticado",
+                content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+        @ApiResponse(responseCode = "403", description = "No autorizado",
                 content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
         @ApiResponse(responseCode = "404", description = "Usuario no encontrado",
                 content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
