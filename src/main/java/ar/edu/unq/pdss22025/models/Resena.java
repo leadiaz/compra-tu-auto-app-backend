@@ -13,8 +13,17 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.OffsetDateTime;
 
+/**
+ * Entidad que representa una reseña de un auto realizada por un usuario.
+ * Un usuario solo puede dejar una reseña por auto.
+ * Restricción única: (usuario_id, auto_id)
+ * El puntaje debe estar entre 0 y 10.
+ */
 @Entity
 @Table(name = "resena",
+        uniqueConstraints = {
+                @UniqueConstraint(name = "uk_resena_usuario_auto", columnNames = {"usuario_id", "auto_id"})
+        },
         indexes = {
                 @Index(name = "idx_resena_usuario", columnList = "usuario_id"),
                 @Index(name = "idx_resena_auto", columnList = "auto_id")
@@ -30,10 +39,10 @@ import java.time.OffsetDateTime;
 public class Resena {
 
     @Id
-        @GeneratedValue(strategy = GenerationType.IDENTITY)
-        @Column(name = "id", nullable = false, updatable = false)
-        @EqualsAndHashCode.Include
-        private Long id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id", nullable = false, updatable = false)
+    @EqualsAndHashCode.Include
+    private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "usuario_id", nullable = false, foreignKey = @ForeignKey(name = "fk_resena_usuario"))
@@ -44,8 +53,8 @@ public class Resena {
     private Auto auto;
 
     @NotNull
-    @Min(1)
-    @Max(5)
+    @Min(0)
+    @Max(10)
     @Column(name = "rating", nullable = false)
     private Integer rating;
 

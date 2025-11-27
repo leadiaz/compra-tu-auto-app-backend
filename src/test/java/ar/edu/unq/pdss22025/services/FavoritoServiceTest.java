@@ -1,231 +1,168 @@
 package ar.edu.unq.pdss22025.services;
 
 import ar.edu.unq.pdss22025.exceptions.EntidadNoEncontradaException;
+import ar.edu.unq.pdss22025.exceptions.FavoritoYaExisteException;
+import ar.edu.unq.pdss22025.exceptions.UsuarioNoValidoException;
 import ar.edu.unq.pdss22025.models.Favorito;
 import ar.edu.unq.pdss22025.models.OfertaAuto;
-import ar.edu.unq.pdss22025.models.usuario.Usuario;
 import ar.edu.unq.pdss22025.models.usuario.UsuarioAdmin;
 import ar.edu.unq.pdss22025.models.usuario.UsuarioComprador;
-import ar.edu.unq.pdss22025.models.usuario.UsuarioConcesionaria;
-import ar.edu.unq.pdss22025.models.Auto;
-import ar.edu.unq.pdss22025.models.Concesionaria;
 import ar.edu.unq.pdss22025.repositories.FavoritoRepository;
 import ar.edu.unq.pdss22025.repositories.OfertaAutoRepository;
 import ar.edu.unq.pdss22025.repositories.UsuarioRepository;
-import ar.edu.unq.pdss22025.repositories.AutoRepository;
-import ar.edu.unq.pdss22025.repositories.ConcesionariaRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
-import org.springframework.context.annotation.Import;
-import org.springframework.test.context.TestPropertySource;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
 
-@DataJpaTest
-@TestPropertySource(properties = {
-        "spring.datasource.url=jdbc:h2:mem:testdb;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH",
-        "spring.jpa.database-platform=org.hibernate.dialect.H2Dialect",
-        // Deshabilitar Flyway y dejar que Hibernate genere el schema en H2 para tests
-        "spring.flyway.enabled=false",
-        "spring.jpa.hibernate.ddl-auto=create-drop"
-})
-@Import(FavoritoService.class)
+@ExtendWith(MockitoExtension.class)
 class FavoritoServiceTest {
 
-    @Autowired
-    private FavoritoService favoritoService;
-
-    @Autowired
-    private TestEntityManager entityManager;
-
-    @Autowired
+    @Mock
     private FavoritoRepository favoritoRepository;
 
-    @Autowired
-    private OfertaAutoRepository ofertaAutoRepository;
-
-    @Autowired
+    @Mock
     private UsuarioRepository usuarioRepository;
 
-    @Autowired
-    private AutoRepository autoRepository;
+    @Mock
+    private OfertaAutoRepository ofertaAutoRepository;
 
-    @Autowired
-    private ConcesionariaRepository concesionariaRepository;
+    @InjectMocks
+    private FavoritoService favoritoService;
 
-    private UsuarioComprador usuario;
-    private OfertaAuto oferta1;
-    private OfertaAuto oferta2;
+    private UsuarioComprador usuarioComprador;
+    private UsuarioAdmin usuarioAdmin;
+    private OfertaAuto oferta;
 
     @BeforeEach
     void setUp() {
-        // Crear usuario comprador
-        usuario = new UsuarioComprador();
-        usuario.setEmail("usuario@test.com");
-        usuario.setPassword("password");
-        usuario.setNombre("Ana");
-        usuario.setApellido("García");
-        usuario.setActivo(true);
-        usuario = usuarioRepository.save(usuario);
+        usuarioComprador = new UsuarioComprador();
+        usuarioComprador.setId(1L);
+        usuarioComprador.setEmail("comprador@test.com");
+        usuarioComprador.setNombre("Comprador");
+        usuarioComprador.setApellido("Test");
 
-        // Crear concesionaria
-        Concesionaria concesionaria = Concesionaria.builder()
-                .nombre("Concesionaria Test")
-                .cuit("20-12345678-9")
-                .activa(true)
+        usuarioAdmin = new UsuarioAdmin();
+        usuarioAdmin.setId(2L);
+        usuarioAdmin.setEmail("admin@test.com");
+
+        oferta = OfertaAuto.builder()
+                .id(1L)
+                .stock(10)
+                .precioActual(new BigDecimal("50000.00"))
+                .moneda("ARS")
                 .build();
-        concesionaria = concesionariaRepository.save(concesionaria);
+    }
 
-        // Crear autos
-        Auto auto1 = Auto.builder()
-                .marca("Toyota")
-                .modelo("Corolla")
-                .anioModelo(2023)
+    @Test
+    void agregarFavorito_UsuarioComprador_DeberiaCrearFavorito() {
+        // Arrange
+        when(usuarioRepository.findById(1L)).thenReturn(Optional.of(usuarioComprador));
+        when(ofertaAutoRepository.findById(1L)).thenReturn(Optional.of(oferta));
+        when(favoritoRepository.existsByUsuarioIdAndOfertaId(1L, 1L)).thenReturn(false);
+        when(favoritoRepository.save(any(Favorito.class))).thenAnswer(invocation -> {
+            Favorito favorito = invocation.getArgument(0);
+            favorito.setId(1L);
+            return favorito;
+        });
+
+        // Act
+        Favorito resultado = favoritoService.agregarFavorito(1L, 1L);
+
+        // Assert
+        assertNotNull(resultado);
+        assertEquals(usuarioComprador, resultado.getUsuario());
+        assertEquals(oferta, resultado.getOferta());
+        verify(favoritoRepository, times(1)).save(any(Favorito.class));
+    }
+
+    @Test
+    void agregarFavorito_UsuarioNoComprador_DeberiaLanzarExcepcion() {
+        // Arrange
+        when(usuarioRepository.findById(2L)).thenReturn(Optional.of(usuarioAdmin));
+
+        // Act & Assert
+        assertThrows(UsuarioNoValidoException.class, () -> {
+            favoritoService.agregarFavorito(2L, 1L);
+        });
+    }
+
+    @Test
+    void agregarFavorito_FavoritoYaExiste_DeberiaLanzarExcepcion() {
+        // Arrange
+        when(usuarioRepository.findById(1L)).thenReturn(Optional.of(usuarioComprador));
+        when(ofertaAutoRepository.findById(1L)).thenReturn(Optional.of(oferta));
+        when(favoritoRepository.existsByUsuarioIdAndOfertaId(1L, 1L)).thenReturn(true);
+
+        // Act & Assert
+        assertThrows(FavoritoYaExisteException.class, () -> {
+            favoritoService.agregarFavorito(1L, 1L);
+        });
+    }
+
+    @Test
+    void eliminarFavorito_FavoritoExiste_DeberiaEliminar() {
+        // Arrange
+        Favorito favorito = Favorito.builder()
+                .id(1L)
+                .usuario(usuarioComprador)
+                .oferta(oferta)
                 .build();
-        auto1 = autoRepository.save(auto1);
+        when(favoritoRepository.findByUsuarioIdAndOfertaId(1L, 1L)).thenReturn(Optional.of(favorito));
 
-        Auto auto2 = Auto.builder()
-                .marca("Honda")
-                .modelo("Civic")
-                .anioModelo(2023)
-                .build();
-        auto2 = autoRepository.save(auto2);
+        // Act
+        favoritoService.eliminarFavorito(1L, 1L);
 
-        // Crear ofertas
-        oferta1 = OfertaAuto.builder()
-                .concesionaria(concesionaria)
-                .auto(auto1)
-                .stock(5)
-                .precioActual(new BigDecimal("25000.00"))
-                .moneda("USD")
-                .build();
-        oferta1 = ofertaAutoRepository.save(oferta1);
-
-        oferta2 = OfertaAuto.builder()
-                .concesionaria(concesionaria)
-                .auto(auto2)
-                .stock(3)
-                .precioActual(new BigDecimal("28000.00"))
-                .moneda("USD")
-                .build();
-        oferta2 = ofertaAutoRepository.save(oferta2);
-
-        entityManager.flush();
-        entityManager.clear();
+        // Assert
+        verify(favoritoRepository, times(1)).delete(favorito);
     }
 
     @Test
-    void definirFavorito_ConUsuarioYOfertaValidos_DeberiaCrearFavorito() {
-        // When
-        Favorito favorito = favoritoService.definirFavorito(usuario.getId(), oferta1.getId());
+    void eliminarFavorito_FavoritoNoExiste_DeberiaLanzarExcepcion() {
+        // Arrange
+        when(favoritoRepository.findByUsuarioIdAndOfertaId(1L, 1L)).thenReturn(Optional.empty());
 
-        // Then
-        assertNotNull(favorito);
-        assertNotNull(favorito.getId());
-        assertEquals(usuario.getId(), favorito.getUsuario().getId());
-        assertEquals(oferta1.getId(), favorito.getOferta().getId());
-
-        // Verificar que se puede obtener
-        Optional<Favorito> favoritoOpt = favoritoService.obtenerPorUsuario(usuario.getId());
-        assertTrue(favoritoOpt.isPresent());
-        assertEquals(oferta1.getId(), favoritoOpt.get().getOferta().getId());
+        // Act & Assert
+        assertThrows(EntidadNoEncontradaException.class, () -> {
+            favoritoService.eliminarFavorito(1L, 1L);
+        });
     }
 
     @Test
-    void definirFavorito_ReemplazarFavoritoExistente_DeberiaActualizarFavorito() {
-        // Given - Crear favorito inicial
-        Favorito favoritoInicial = favoritoService.definirFavorito(usuario.getId(), oferta1.getId());
-        
-        // When - Reemplazar con nueva oferta
-        Favorito favoritoNuevo = favoritoService.definirFavorito(usuario.getId(), oferta2.getId());
+    void listarFavoritosDeUsuario_UsuarioExiste_DeberiaRetornarLista() {
+        // Arrange
+        List<Favorito> favoritos = new ArrayList<>();
+        favoritos.add(Favorito.builder().id(1L).usuario(usuarioComprador).oferta(oferta).build());
+        when(usuarioRepository.findById(1L)).thenReturn(Optional.of(usuarioComprador));
+        when(favoritoRepository.findByUsuarioId(1L)).thenReturn(favoritos);
 
-        // Then
-        assertNotNull(favoritoNuevo);
-        assertEquals(oferta2.getId(), favoritoNuevo.getOferta().getId());
+        // Act
+        List<Favorito> resultado = favoritoService.listarFavoritosDeUsuario(1L);
 
-        // Verificar que solo existe un favorito para el usuario
-        Optional<Favorito> favoritoOpt = favoritoService.obtenerPorUsuario(usuario.getId());
-        assertTrue(favoritoOpt.isPresent());
-        assertEquals(oferta2.getId(), favoritoOpt.get().getOferta().getId());
-
-        // Verificar que el favorito anterior fue eliminado
-        assertFalse(favoritoRepository.existsById(favoritoInicial.getId()));
-
-        // Verificar constraint UNIQUE en base de datos
-        long count = favoritoRepository.count();
-        assertEquals(1, count, "Debe haber exactamente un favorito en la base de datos");
+        // Assert
+        assertNotNull(resultado);
+        assertEquals(1, resultado.size());
     }
 
     @Test
-    void definirFavorito_ConUsuarioInexistente_DeberiaLanzarExcepcion() {
-        // When & Then
-        EntidadNoEncontradaException exception = assertThrows(
-                EntidadNoEncontradaException.class,
-                () -> favoritoService.definirFavorito(999L, oferta1.getId())
-        );
-        assertEquals("Usuario no encontrado", exception.getMessage());
-    }
+    void listarFavoritosDeUsuario_UsuarioNoExiste_DeberiaLanzarExcepcion() {
+        // Arrange
+        when(usuarioRepository.findById(999L)).thenReturn(Optional.empty());
 
-    @Test
-    void definirFavorito_ConOfertaInexistente_DeberiaLanzarExcepcion() {
-        // When & Then
-        EntidadNoEncontradaException exception = assertThrows(
-                EntidadNoEncontradaException.class,
-                () -> favoritoService.definirFavorito(usuario.getId(), 999L)
-        );
-        assertEquals("Oferta no encontrada", exception.getMessage());
-    }
-
-    @Test
-    void obtenerPorUsuario_SinFavorito_DeberiaRetornarEmpty() {
-        // When
-        Optional<Favorito> favoritoOpt = favoritoService.obtenerPorUsuario(usuario.getId());
-
-        // Then
-        assertTrue(favoritoOpt.isEmpty());
-    }
-
-    @Test
-    void obtenerPorUsuario_ConUsuarioInexistente_DeberiaLanzarExcepcion() {
-        // When & Then
-        EntidadNoEncontradaException exception = assertThrows(
-                EntidadNoEncontradaException.class,
-                () -> favoritoService.obtenerPorUsuario(999L)
-        );
-        assertEquals("Usuario no encontrado", exception.getMessage());
-    }
-
-    @Test
-    void definirFavorito_ConUsuarioAdmin_DeberiaLanzarUnprocessable() {
-        Usuario admin = new UsuarioAdmin();
-        admin.setEmail("admin@test.com");
-        admin.setPassword("pwd");
-        admin.setNombre("Admin");
-        admin.setApellido("Root");
-        admin.setActivo(true);
-        admin = usuarioRepository.save(admin);
-        final Long adminId = admin.getId();
-
-        assertThrows(IllegalStateException.class, () -> favoritoService.definirFavorito(adminId, oferta1.getId()));
-    }
-
-    @Test
-    void definirFavorito_ConUsuarioConcesionaria_DeberiaLanzarUnprocessable() {
-        Usuario concesionario = new UsuarioConcesionaria();
-        concesionario.setEmail("conc@test.com");
-        concesionario.setPassword("pwd");
-        concesionario.setNombre("Conc");
-        concesionario.setApellido("SA");
-        concesionario.setActivo(true);
-        concesionario = usuarioRepository.save(concesionario);
-        final Long concId = concesionario.getId();
-
-        assertThrows(IllegalStateException.class, () -> favoritoService.definirFavorito(concId, oferta1.getId()));
+        // Act & Assert
+        assertThrows(EntidadNoEncontradaException.class, () -> {
+            favoritoService.listarFavoritosDeUsuario(999L);
+        });
     }
 }

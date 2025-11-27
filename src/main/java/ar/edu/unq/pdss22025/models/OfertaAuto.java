@@ -56,14 +56,14 @@ public class OfertaAuto {
     private String moneda;
 
     // Compras asociadas (no cascade remove para preservar integridad histórica)
-        @Builder.Default
-        @OneToMany(mappedBy = "oferta", fetch = FetchType.LAZY)
-        private List<Compra> compras = new ArrayList<>();
+    @Builder.Default
+    @OneToMany(mappedBy = "oferta", fetch = FetchType.LAZY)
+    private List<Compra> compras = new ArrayList<>();
 
     // Favoritos que referencian esta oferta
-        @Builder.Default
-        @OneToMany(mappedBy = "oferta", fetch = FetchType.LAZY)
-        private List<Favorito> favoritos = new ArrayList<>();
+    @Builder.Default
+    @OneToMany(mappedBy = "oferta", fetch = FetchType.LAZY)
+    private List<Favorito> favoritos = new ArrayList<>();
 
     @CreatedDate
     @Column(name = "created_at", nullable = false, updatable = false)

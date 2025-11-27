@@ -1,8 +1,5 @@
 package ar.edu.unq.pdss22025.controllers;
 
-import ar.edu.unq.pdss22025.models.dto.FavoritoResponse;
-import ar.edu.unq.pdss22025.services.FavoritoService;
-import ar.edu.unq.pdss22025.mapper.FavoritoMapper;
 import ar.edu.unq.pdss22025.models.dto.CompraResponse;
 import ar.edu.unq.pdss22025.services.CompraService;
 import ar.edu.unq.pdss22025.mapper.CompraMapper;
@@ -38,45 +35,11 @@ public class UsuarioController {
     private final UsuarioService usuarioService;
     private final CompraService compraService;
     private final CompraMapper compraMapper;
-    private final FavoritoService favoritoService;
-    private final FavoritoMapper favoritoMapper;
 
-    public UsuarioController(UsuarioService usuarioService, CompraService compraService, CompraMapper compraMapper, FavoritoService favoritoService, FavoritoMapper favoritoMapper) {
+    public UsuarioController(UsuarioService usuarioService, CompraService compraService, CompraMapper compraMapper) {
         this.usuarioService = usuarioService;
         this.compraService = compraService;
         this.compraMapper = compraMapper;
-        this.favoritoService = favoritoService;
-        this.favoritoMapper = favoritoMapper;
-    }
-    @GetMapping("/{usuarioId}/favorito")
-    @PreAuthorize("hasRole('COMPRADOR') or hasRole('ADMIN')")
-    @Operation(summary = "Obtener favorito del usuario", description = "Obtiene el favorito de un usuario si existe.")
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Favorito encontrado"),
-        @ApiResponse(responseCode = "204", description = "El usuario no tiene favorito"),
-        @ApiResponse(responseCode = "404", description = "Usuario no encontrado",
-                content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
-    })
-    public ResponseEntity<FavoritoResponse> getFavorito(@Parameter(description = "ID del usuario", required = true) @PathVariable("usuarioId") @NotNull Long usuarioId) {
-        var favoritoOpt = favoritoService.obtenerPorUsuario(usuarioId);
-        return favoritoOpt.map(favorito -> ResponseEntity.ok(favoritoMapper.toResponse(favorito))).orElseGet(() -> ResponseEntity.noContent().build());
-    }
-
-    @PutMapping("/{usuarioId}/favorito/{ofertaId}")
-    @PreAuthorize("hasRole('COMPRADOR') or hasRole('ADMIN')")
-    @Operation(summary = "Definir favorito", description = "Define la oferta indicada como favorito del usuario.")
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Favorito creado o actualizado"),
-        @ApiResponse(responseCode = "404", description = "Usuario u oferta no existe",
-                content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
-        @ApiResponse(responseCode = "422", description = "Operación no procesable por reglas de negocio",
-                content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
-    })
-    public ResponseEntity<FavoritoResponse> setFavorito(
-            @Parameter(description = "ID del usuario", required = true) @PathVariable("usuarioId") @NotNull Long usuarioId,
-            @Parameter(description = "ID de la oferta", required = true) @PathVariable("ofertaId") @NotNull Long ofertaId) {
-        var favorito = favoritoService.definirFavorito(usuarioId, ofertaId);
-        return ResponseEntity.ok(favoritoMapper.toResponse(favorito));
     }
     @GetMapping("/{usuarioId}/compras")
     @PreAuthorize("hasRole('COMPRADOR') or hasRole('ADMIN')")
@@ -122,12 +85,18 @@ public class UsuarioController {
     
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
-    @Operation(summary = "Listar usuarios", description = "Devuelve todos los usuarios del sistema.")
+    @Operation(summary = "Listar usuarios", description = "Devuelve usuarios del sistema con filtros opcionales. Puede filtrar por tipo de usuario y por usuarios CONCESIONARIA sin concesionaria asignada.")
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Listado de usuarios")
+        @ApiResponse(responseCode = "200", description = "Listado de usuarios"),
+        @ApiResponse(responseCode = "400", description = "Parámetros de filtro inválidos",
+                content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
-    public ResponseEntity<List<UsuarioResponse>> obtenerTodosLosUsuarios() {
-        List<Usuario> usuarios = usuarioService.obtenerTodosLosUsuarios();
+    public ResponseEntity<List<UsuarioResponse>> obtenerTodosLosUsuarios(
+            @Parameter(description = "Tipo de usuario para filtrar (ADMIN, COMPRADOR, CONCESIONARIA)", required = false)
+            @RequestParam(value = "tipoUsuario", required = false) String tipoUsuario,
+            @Parameter(description = "Si es true, filtra usuarios CONCESIONARIA que no tienen concesionaria asignada. Solo aplica cuando tipoUsuario es CONCESIONARIA", required = false)
+            @RequestParam(value = "sinConcesionaria", required = false) Boolean sinConcesionaria) {
+        List<Usuario> usuarios = usuarioService.obtenerUsuariosConFiltros(tipoUsuario, sinConcesionaria);
         List<UsuarioResponse> responses = usuarios.stream()
                 .map(usuario -> new UsuarioResponse(
                     usuario.getId(),

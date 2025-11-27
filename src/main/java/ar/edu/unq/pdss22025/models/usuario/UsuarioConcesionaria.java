@@ -33,5 +33,10 @@ public class UsuarioConcesionaria extends Usuario {
     public Rol getRol() {
         return Rol.CONCESIONARIA;
     }
+
+    @Override
+    public boolean esConcesionaria() {
+        return true;
+    }
 }
 

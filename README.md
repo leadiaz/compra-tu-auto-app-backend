@@ -217,6 +217,42 @@ Responses:
 - 400 Bad Request: si el tipo es inválido.
 
 
+### AutoController
+- `POST /autos`
+
+Descripción: crea un auto (ADMIN). Evita duplicados por combinación marca-modelo-año.
+
+Request body (CrearAutoRequest):
+```json
+{
+  "marca": "Toyota",
+  "modelo": "Corolla",
+  "anioModelo": 2024
+}
+```
+
+Responses:
+- 201 Created: `AutoResponse`
+  ```json
+  {
+    "id": 1,
+    "marca": "Toyota",
+    "modelo": "Corolla",
+    "anioModelo": 2024,
+    "fechaAlta": "2025-10-16T12:34:56",
+    "fechaActualizacion": "2025-10-16T12:34:56"
+  }
+  ```
+- 422 Unprocessable Entity: si ya existe un auto con la misma marca, modelo y año.
+
+- `GET /autos`
+
+Descripción: lista todos los autos. Disponible para COMPRADOR, CONCESIONARIA y ADMIN.
+
+- `DELETE /autos/{id}`
+
+Descripción: elimina un auto por ID (ADMIN).
+
 ### AuthController
 
 #### POST /auth/login

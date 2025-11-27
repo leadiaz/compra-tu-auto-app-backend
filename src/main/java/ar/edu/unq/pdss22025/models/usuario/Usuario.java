@@ -111,4 +111,12 @@ public abstract class Usuario {
      * @return El rol correspondiente (COMPRADOR, CONCESIONARIA o ADMIN)
      */
     public abstract Rol getRol();
+
+    /**
+     * Indica si el usuario es de tipo CONCESIONARIA.
+     * @return default false
+     */
+    public boolean esConcesionaria() {
+        return false;
+    }
 }
