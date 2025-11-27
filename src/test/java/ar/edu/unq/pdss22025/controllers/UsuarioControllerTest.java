@@ -250,7 +250,7 @@ class UsuarioControllerTest {
         .andExpect(jsonPath("$.items.length()").value(3))
         .andExpect(jsonPath("$.items[0].label").value("Ofertas"))
         .andExpect(jsonPath("$.items[0].icon").value("shopping-cart"))
-        .andExpect(jsonPath("$.items[0].route").value("/ofertas"))
+        .andExpect(jsonPath("$.items[0].route").value("/dashboard/ofertas"))
         .andExpect(jsonPath("$.items[0].orden").value(1));
     }
 
