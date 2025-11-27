@@ -122,12 +122,18 @@ public class UsuarioController {
     
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
-    @Operation(summary = "Listar usuarios", description = "Devuelve todos los usuarios del sistema.")
+    @Operation(summary = "Listar usuarios", description = "Devuelve usuarios del sistema con filtros opcionales. Puede filtrar por tipo de usuario y por usuarios CONCESIONARIA sin concesionaria asignada.")
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Listado de usuarios")
+        @ApiResponse(responseCode = "200", description = "Listado de usuarios"),
+        @ApiResponse(responseCode = "400", description = "Parámetros de filtro inválidos",
+                content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
-    public ResponseEntity<List<UsuarioResponse>> obtenerTodosLosUsuarios() {
-        List<Usuario> usuarios = usuarioService.obtenerTodosLosUsuarios();
+    public ResponseEntity<List<UsuarioResponse>> obtenerTodosLosUsuarios(
+            @Parameter(description = "Tipo de usuario para filtrar (ADMIN, COMPRADOR, CONCESIONARIA)", required = false)
+            @RequestParam(value = "tipoUsuario", required = false) String tipoUsuario,
+            @Parameter(description = "Si es true, filtra usuarios CONCESIONARIA que no tienen concesionaria asignada. Solo aplica cuando tipoUsuario es CONCESIONARIA", required = false)
+            @RequestParam(value = "sinConcesionaria", required = false) Boolean sinConcesionaria) {
+        List<Usuario> usuarios = usuarioService.obtenerUsuariosConFiltros(tipoUsuario, sinConcesionaria);
         List<UsuarioResponse> responses = usuarios.stream()
                 .map(usuario -> new UsuarioResponse(
                     usuario.getId(),

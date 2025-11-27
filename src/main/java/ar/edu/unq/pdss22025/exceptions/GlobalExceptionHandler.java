@@ -133,6 +133,20 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
     }
 
+    @ExceptionHandler(UsuarioNoValidoException.class)
+    public ResponseEntity<ErrorResponse> handleUsuarioNoValidoException(
+            UsuarioNoValidoException ex, HttpServletRequest request) {
+        
+        ErrorResponse errorResponse = new ErrorResponse(
+                HttpStatus.UNPROCESSABLE_ENTITY.value(),
+                HttpStatus.UNPROCESSABLE_ENTITY.getReasonPhrase(),
+                ex.getMessage() != null ? ex.getMessage() : "El usuario no es válido para esta operación",
+                request.getRequestURI()
+        );
+        
+        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(errorResponse);
+    }
+
     /**
      * Determina el código de estado HTTP para IllegalArgumentException.
      * Retorna 404 para argumentos inválidos.

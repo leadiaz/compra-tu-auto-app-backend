@@ -7,4 +7,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface AutoRepository extends JpaRepository<Auto, Long> {
+    boolean existsByMarcaIgnoreCaseAndModeloIgnoreCaseAndAnioModelo(String marca, String modelo, Integer anioModelo);
 }

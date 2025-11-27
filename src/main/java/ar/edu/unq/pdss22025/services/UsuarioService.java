@@ -61,6 +61,30 @@ public class UsuarioService {
         return usuarioRepository.findAll();
     }
 
+    public List<Usuario> obtenerUsuariosConFiltros(String tipoUsuario, Boolean sinConcesionaria) {
+        // Si se solicita filtrar usuarios CONCESIONARIA sin concesionaria asignada
+        if (sinConcesionaria != null && sinConcesionaria) {
+            // Si también se especifica tipoUsuario, validar que sea CONCESIONARIA
+            if (tipoUsuario != null && !tipoUsuario.trim().isEmpty()) {
+                String tipo = tipoUsuario.trim().toUpperCase(Locale.ROOT);
+                if (!tipo.equals("CONCESIONARIA")) {
+                    // Si el tipo no es CONCESIONARIA, retornar lista vacía
+                    return new ArrayList<>();
+                }
+            }
+            // Filtrar usuarios CONCESIONARIA sin concesionaria usando JPA
+            return new ArrayList<>(usuarioConcesionariaRepository.findByConcesionariaIsNull());
+        }
+
+        // Si se especifica tipo de usuario, filtrar por tipo usando JPA
+        if (tipoUsuario != null && !tipoUsuario.trim().isEmpty()) {
+            return obtenerUsuariosPorTipo(tipoUsuario);
+        }
+
+        // Si no hay filtros, retornar todos los usuarios
+        return obtenerTodosLosUsuarios();
+    }
+
     public Optional<Usuario> obtenerUsuarioPorId(Long id) {
         return usuarioRepository.findById(id);
     }
