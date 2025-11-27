@@ -4,11 +4,7 @@ import ar.edu.unq.pdss22025.mapper.CompraMapper;
 import ar.edu.unq.pdss22025.models.Compra;
 import ar.edu.unq.pdss22025.models.usuario.Usuario;
 import ar.edu.unq.pdss22025.models.dto.CompraResponse;
-import ar.edu.unq.pdss22025.models.dto.FavoritoResponse;
-import ar.edu.unq.pdss22025.models.Favorito;
 import ar.edu.unq.pdss22025.services.CompraService;
-import ar.edu.unq.pdss22025.services.FavoritoService;
-import ar.edu.unq.pdss22025.mapper.FavoritoMapper;
 import ar.edu.unq.pdss22025.services.UsuarioService;
 import ar.edu.unq.pdss22025.services.JwtService;
 import ar.edu.unq.pdss22025.services.UsuarioDetailsService;
@@ -46,10 +42,6 @@ class UsuarioControllerTest {
     private MockMvc mockMvc;
 
     @MockitoBean
-    private FavoritoService favoritoService;
-    @MockitoBean
-    private FavoritoMapper favoritoMapper;
-    @MockitoBean
     private UsuarioService usuarioService;
     @MockitoBean
     private CompraService compraService;
@@ -59,60 +51,6 @@ class UsuarioControllerTest {
     private JwtService jwtService;
     @MockitoBean
     private UsuarioDetailsService usuarioDetailsService;
-
-    @Test
-    void setFavorito_ok() throws Exception {
-        Favorito favorito = new Favorito();
-        FavoritoResponse response = new FavoritoResponse();
-        Mockito.when(favoritoService.definirFavorito(anyLong(), anyLong())).thenReturn(favorito);
-        Mockito.when(favoritoMapper.toResponse(favorito)).thenReturn(response);
-        mockMvc.perform(put("/usuarios/1/favorito/2")
-                .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk());
-    }
-
-    @Test
-    void setFavorito_notFound() throws Exception {
-        Mockito.when(favoritoService.definirFavorito(anyLong(), anyLong())).thenThrow(new IllegalArgumentException());
-        mockMvc.perform(put("/usuarios/1/favorito/2")
-                .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isNotFound());
-    }
-
-    @Test
-    void setFavorito_unprocessableEntity() throws Exception {
-        Mockito.when(favoritoService.definirFavorito(anyLong(), anyLong())).thenThrow(new IllegalStateException("Solo los usuarios de tipo COMPRADOR pueden definir un favorito"));
-        mockMvc.perform(put("/usuarios/1/favorito/2")
-                .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isUnprocessableEntity());
-    }
-
-    @Test
-    void getFavorito_ok() throws Exception {
-        Favorito favorito = new Favorito();
-        FavoritoResponse response = new FavoritoResponse();
-        Mockito.when(favoritoService.obtenerPorUsuario(1L)).thenReturn(Optional.of(favorito));
-        Mockito.when(favoritoMapper.toResponse(favorito)).thenReturn(response);
-        mockMvc.perform(
-                get("/usuarios/1/favorito")
-        ).andExpect(status().isOk());
-    }
-
-    @Test
-    void getFavorito_noContent() throws Exception {
-        Mockito.when(favoritoService.obtenerPorUsuario(1L)).thenReturn(Optional.empty());
-        mockMvc.perform(
-                get("/usuarios/1/favorito")
-        ).andExpect(status().isNoContent());
-    }
-
-    @Test
-    void getFavorito_notFound() throws Exception {
-        Mockito.when(favoritoService.obtenerPorUsuario(1L)).thenThrow(new IllegalArgumentException());
-        mockMvc.perform(
-                get("/usuarios/1/favorito")
-        ).andExpect(status().isNotFound());
-    }
 
     @Test
     void getComprasByUsuario_ok() throws Exception {

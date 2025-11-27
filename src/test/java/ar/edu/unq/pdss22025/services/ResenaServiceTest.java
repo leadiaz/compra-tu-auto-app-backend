@@ -1,241 +1,203 @@
 package ar.edu.unq.pdss22025.services;
 
 import ar.edu.unq.pdss22025.exceptions.EntidadNoEncontradaException;
+import ar.edu.unq.pdss22025.exceptions.PuntajeInvalidoException;
+import ar.edu.unq.pdss22025.exceptions.ResenaYaExisteException;
+import ar.edu.unq.pdss22025.models.Auto;
 import ar.edu.unq.pdss22025.models.Resena;
 import ar.edu.unq.pdss22025.models.usuario.UsuarioComprador;
-import ar.edu.unq.pdss22025.models.Auto;
-import ar.edu.unq.pdss22025.models.dto.CrearResenaRequest;
-import ar.edu.unq.pdss22025.repositories.UsuarioRepository;
 import ar.edu.unq.pdss22025.repositories.AutoRepository;
+import ar.edu.unq.pdss22025.repositories.ResenaRepository;
+import ar.edu.unq.pdss22025.repositories.UsuarioRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
-import org.springframework.context.annotation.Import;
-import org.springframework.test.context.TestPropertySource;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
 
-@DataJpaTest
-@TestPropertySource(properties = {
-        "spring.datasource.url=jdbc:h2:mem:testdb;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH",
-        "spring.jpa.database-platform=org.hibernate.dialect.H2Dialect",
-        // Deshabilitar Flyway en tests y generar esquema con Hibernate
-        "spring.flyway.enabled=false",
-        "spring.jpa.hibernate.ddl-auto=create-drop"
-})
-@Import(ResenaService.class)
+@ExtendWith(MockitoExtension.class)
 class ResenaServiceTest {
 
-    @Autowired
-    private ResenaService resenaService;
+    @Mock
+    private ResenaRepository resenaRepository;
 
-    @Autowired
-    private TestEntityManager entityManager;
-
-    @Autowired
-    private UsuarioRepository usuarioRepository;
-
-    @Autowired
+    @Mock
     private AutoRepository autoRepository;
 
-    private UsuarioComprador usuario1;
-    private UsuarioComprador usuario2;
+    @Mock
+    private UsuarioRepository usuarioRepository;
+
+    @InjectMocks
+    private ResenaService resenaService;
+
+    private UsuarioComprador usuario;
     private Auto auto;
 
     @BeforeEach
     void setUp() {
-        // Crear usuarios
-        usuario1 = new UsuarioComprador();
-        usuario1.setEmail("usuario1@test.com");
-        usuario1.setPassword("password");
-        usuario1.setNombre("Ana");
-        usuario1.setApellido("García");
-        usuario1.setActivo(true);
-        usuario1 = usuarioRepository.save(usuario1);
+        usuario = new UsuarioComprador();
+        usuario.setId(1L);
+        usuario.setEmail("usuario@test.com");
+        usuario.setNombre("Usuario");
+        usuario.setApellido("Test");
 
-        usuario2 = new UsuarioComprador();
-        usuario2.setEmail("usuario2@test.com");
-        usuario2.setPassword("password");
-        usuario2.setNombre("Carlos");
-        usuario2.setApellido("López");
-        usuario2.setActivo(true);
-        usuario2 = usuarioRepository.save(usuario2);
-
-        // Crear auto
         auto = Auto.builder()
+                .id(1L)
                 .marca("Toyota")
                 .modelo("Corolla")
-                .anioModelo(2023)
+                .anioModelo(2024)
                 .build();
-        auto = autoRepository.save(auto);
-
-        entityManager.flush();
-        entityManager.clear();
     }
 
     @Test
-    void crear_ConDatosValidos_DeberiaCrearResena() {
-        // Given
-        CrearResenaRequest request = new CrearResenaRequest();
-        request.setUsuarioId(usuario1.getId());
-        request.setAutoId(auto.getId());
-        request.setRating(5);
-        request.setComentario("Excelente auto, muy recomendado");
+    void crearReseña_PuntajeValido_DeberiaCrearResena() {
+        // Arrange
+        when(usuarioRepository.findById(1L)).thenReturn(Optional.of(usuario));
+        when(autoRepository.findById(1L)).thenReturn(Optional.of(auto));
+        when(resenaRepository.existsByUsuarioIdAndAutoId(1L, 1L)).thenReturn(false);
+        when(resenaRepository.save(any(Resena.class))).thenAnswer(invocation -> {
+            Resena resena = invocation.getArgument(0);
+            resena.setId(1L);
+            return resena;
+        });
 
-        // When
-        Resena resena = resenaService.crear(request);
+        // Act
+        Resena resultado = resenaService.crearReseña(1L, 1L, 8, "Excelente auto");
 
-        // Then
-        assertNotNull(resena);
-        assertNotNull(resena.getId());
-        assertEquals(usuario1.getId(), resena.getUsuario().getId());
-        assertEquals(auto.getId(), resena.getAuto().getId());
-        assertEquals(Integer.valueOf(5), resena.getRating());
-        assertEquals("Excelente auto, muy recomendado", resena.getComentario());
-        assertNotNull(resena.getCreatedAt());
+        // Assert
+        assertNotNull(resultado);
+        assertEquals(8, resultado.getRating());
+        assertEquals("Excelente auto", resultado.getComentario());
+        assertEquals(usuario, resultado.getUsuario());
+        assertEquals(auto, resultado.getAuto());
+        verify(resenaRepository, times(1)).save(any(Resena.class));
     }
 
     @Test
-    void crear_SinComentario_DeberiaCrearResena() {
-        // Given
-        CrearResenaRequest request = new CrearResenaRequest();
-        request.setUsuarioId(usuario1.getId());
-        request.setAutoId(auto.getId());
-        request.setRating(4);
-        // Sin comentario (null)
-
-        // When
-        Resena resena = resenaService.crear(request);
-
-        // Then
-        assertNotNull(resena);
-        assertEquals(Integer.valueOf(4), resena.getRating());
-        assertNull(resena.getComentario());
+    void crearReseña_PuntajeMenorACero_DeberiaLanzarExcepcion() {
+        // Act & Assert
+        assertThrows(PuntajeInvalidoException.class, () -> {
+            resenaService.crearReseña(1L, 1L, -1, "Comentario");
+        });
     }
 
     @Test
-    void crear_ConRatingInvalido_DeberiaLanzarExcepcion() {
-        // Given
-        CrearResenaRequest request = new CrearResenaRequest();
-        request.setUsuarioId(usuario1.getId());
-        request.setAutoId(auto.getId());
-        request.setRating(6); // Rating fuera de rango
-
-        // When & Then
-        IllegalArgumentException exception = assertThrows(
-                IllegalArgumentException.class,
-                () -> resenaService.crear(request)
-        );
-        assertEquals("Rating fuera de rango (1..5)", exception.getMessage());
+    void crearReseña_PuntajeMayorADiez_DeberiaLanzarExcepcion() {
+        // Act & Assert
+        assertThrows(PuntajeInvalidoException.class, () -> {
+            resenaService.crearReseña(1L, 1L, 11, "Comentario");
+        });
     }
 
     @Test
-    void crear_ConRatingCero_DeberiaLanzarExcepcion() {
-        // Given
-        CrearResenaRequest request = new CrearResenaRequest();
-        request.setUsuarioId(usuario1.getId());
-        request.setAutoId(auto.getId());
-        request.setRating(0); // Rating fuera de rango
+    void crearReseña_ResenaYaExiste_DeberiaLanzarExcepcion() {
+        // Arrange
+        when(usuarioRepository.findById(1L)).thenReturn(Optional.of(usuario));
+        when(autoRepository.findById(1L)).thenReturn(Optional.of(auto));
+        when(resenaRepository.existsByUsuarioIdAndAutoId(1L, 1L)).thenReturn(true);
 
-        // When & Then
-        IllegalArgumentException exception = assertThrows(
-                IllegalArgumentException.class,
-                () -> resenaService.crear(request)
-        );
-        assertEquals("Rating fuera de rango (1..5)", exception.getMessage());
+        // Act & Assert
+        assertThrows(ResenaYaExisteException.class, () -> {
+            resenaService.crearReseña(1L, 1L, 8, "Comentario");
+        });
     }
 
     @Test
-    void crear_ConAutoInexistente_DeberiaLanzarExcepcion() {
-        // Given
-        CrearResenaRequest request = new CrearResenaRequest();
-        request.setUsuarioId(usuario1.getId());
-        request.setAutoId(999L); // Auto inexistente
-        request.setRating(5);
+    void actualizarReseña_ResenaExiste_DeberiaActualizar() {
+        // Arrange
+        Resena resena = Resena.builder()
+                .id(1L)
+                .usuario(usuario)
+                .auto(auto)
+                .rating(5)
+                .comentario("Comentario antiguo")
+                .build();
+        when(resenaRepository.findByUsuarioIdAndAutoId(1L, 1L)).thenReturn(Optional.of(resena));
+        when(resenaRepository.save(any(Resena.class))).thenReturn(resena);
 
-        // When & Then
-        EntidadNoEncontradaException exception = assertThrows(
-                EntidadNoEncontradaException.class,
-                () -> resenaService.crear(request)
-        );
-        assertEquals("Auto no encontrado", exception.getMessage());
+        // Act
+        Resena resultado = resenaService.actualizarReseña(1L, 1L, 9, "Comentario nuevo");
+
+        // Assert
+        assertEquals(9, resultado.getRating());
+        assertEquals("Comentario nuevo", resultado.getComentario());
+        verify(resenaRepository, times(1)).save(resena);
     }
 
     @Test
-    void crear_ConUsuarioInexistente_DeberiaLanzarExcepcion() {
-        // Given
-        CrearResenaRequest request = new CrearResenaRequest();
-        request.setUsuarioId(999L); // Usuario inexistente
-        request.setAutoId(auto.getId());
-        request.setRating(5);
-
-        // When & Then
-        EntidadNoEncontradaException exception = assertThrows(
-                EntidadNoEncontradaException.class,
-                () -> resenaService.crear(request)
-        );
-        assertEquals("Usuario no encontrado", exception.getMessage());
+    void actualizarReseña_PuntajeInvalido_DeberiaLanzarExcepcion() {
+        // Act & Assert
+        assertThrows(PuntajeInvalidoException.class, () -> {
+            resenaService.actualizarReseña(1L, 1L, 15, "Comentario");
+        });
     }
 
     @Test
-    void listarPorAuto_DeberiaRetornarResenasOrdenadas() throws InterruptedException {
-        // Given - Crear múltiples reseñas con diferentes timestamps
-        CrearResenaRequest request1 = new CrearResenaRequest();
-        request1.setUsuarioId(usuario1.getId());
-        request1.setAutoId(auto.getId());
-        request1.setRating(5);
-        request1.setComentario("Primera reseña");
-        
-        resenaService.crear(request1);
-        
-        // Esperar un poco para asegurar diferente timestamp
-        Thread.sleep(10);
-        
-        CrearResenaRequest request2 = new CrearResenaRequest();
-        request2.setUsuarioId(usuario2.getId());
-        request2.setAutoId(auto.getId());
-        request2.setRating(4);
-        request2.setComentario("Segunda reseña");
-        
-        resenaService.crear(request2);
-        
-        // When
-        List<Resena> resenas = resenaService.listarPorAuto(auto.getId());
+    void eliminarReseña_ResenaExiste_DeberiaEliminar() {
+        // Arrange
+        Resena resena = Resena.builder()
+                .id(1L)
+                .usuario(usuario)
+                .auto(auto)
+                .rating(8)
+                .build();
+        when(resenaRepository.findByUsuarioIdAndAutoId(1L, 1L)).thenReturn(Optional.of(resena));
 
-        // Then
-        assertNotNull(resenas);
-        assertEquals(2, resenas.size());
-        
-        // Verificar que están ordenadas por fecha de creación descendente (más reciente primero)
-        assertTrue(resenas.get(0).getCreatedAt().isAfter(resenas.get(1).getCreatedAt()) ||
-                  resenas.get(0).getCreatedAt().isEqual(resenas.get(1).getCreatedAt()));
-        
-        // La reseña más reciente debería ser la segunda
-        assertEquals("Segunda reseña", resenas.get(0).getComentario());
-        assertEquals("Primera reseña", resenas.get(1).getComentario());
+        // Act
+        resenaService.eliminarReseña(1L, 1L);
+
+        // Assert
+        verify(resenaRepository, times(1)).delete(resena);
     }
 
     @Test
-    void listarPorAuto_ConAutoInexistente_DeberiaLanzarExcepcion() {
-        // When & Then
-        EntidadNoEncontradaException exception = assertThrows(
-                EntidadNoEncontradaException.class,
-                () -> resenaService.listarPorAuto(999L)
-        );
-        assertEquals("Auto no encontrado", exception.getMessage());
+    void listarResenasDeAuto_AutoExiste_DeberiaRetornarLista() {
+        // Arrange
+        List<Resena> resenas = new ArrayList<>();
+        resenas.add(Resena.builder().id(1L).usuario(usuario).auto(auto).rating(8).build());
+        when(autoRepository.findById(1L)).thenReturn(Optional.of(auto));
+        when(resenaRepository.findByAutoOrderByCreatedAtDesc(auto)).thenReturn(resenas);
+
+        // Act
+        List<Resena> resultado = resenaService.listarReseñasDeAuto(1L);
+
+        // Assert
+        assertNotNull(resultado);
+        assertEquals(1, resultado.size());
     }
 
     @Test
-    void listarPorAuto_SinResenas_DeberiaRetornarListaVacia() {
-        // When
-        List<Resena> resenas = resenaService.listarPorAuto(auto.getId());
+    void obtenerPromedioPuntajeAuto_AutoConResenas_DeberiaCalcularPromedio() {
+        // Arrange
+        when(autoRepository.findById(1L)).thenReturn(Optional.of(auto));
+        when(resenaRepository.calcularPromedioPuntajePorAutoId(1L)).thenReturn(8.5);
 
-        // Then
-        assertNotNull(resenas);
-        assertTrue(resenas.isEmpty());
+        // Act
+        double promedio = resenaService.obtenerPromedioPuntajeAuto(1L);
+
+        // Assert
+        assertEquals(8.5, promedio);
+    }
+
+    @Test
+    void obtenerPromedioPuntajeAuto_AutoSinResenas_DeberiaRetornarCero() {
+        // Arrange
+        when(autoRepository.findById(1L)).thenReturn(Optional.of(auto));
+        when(resenaRepository.calcularPromedioPuntajePorAutoId(1L)).thenReturn(null);
+
+        // Act
+        double promedio = resenaService.obtenerPromedioPuntajeAuto(1L);
+
+        // Assert
+        assertEquals(0.0, promedio);
     }
 }
