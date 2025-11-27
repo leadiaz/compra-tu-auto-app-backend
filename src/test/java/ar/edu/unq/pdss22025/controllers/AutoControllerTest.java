@@ -129,5 +129,60 @@ class AutoControllerTest {
                 .andExpect(jsonPath("$[0].id").value(1L))
                 .andExpect(jsonPath("$[0].marca").value("Toyota"));
     }
+
+    @Test
+    @WithMockUser(roles = "COMPRADOR")
+    void listarMarcas_ok() throws Exception {
+        List<String> marcas = List.of("Ford", "Honda", "Toyota");
+        Mockito.when(autoService.obtenerMarcas()).thenReturn(marcas);
+
+        mockMvc.perform(get("/autos/marcas"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0]").value("Ford"))
+                .andExpect(jsonPath("$[1]").value("Honda"))
+                .andExpect(jsonPath("$[2]").value("Toyota"));
+    }
+
+    @Test
+    @WithMockUser(roles = "CONCESIONARIA")
+    void listarMarcas_concesionaria_ok() throws Exception {
+        List<String> marcas = List.of("Ford", "Toyota");
+        Mockito.when(autoService.obtenerMarcas()).thenReturn(marcas);
+
+        mockMvc.perform(get("/autos/marcas"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    @WithMockUser(roles = "COMPRADOR")
+    void listarModelos_ok() throws Exception {
+        List<String> modelos = List.of("Corolla", "Camry", "RAV4");
+        Mockito.when(autoService.obtenerModelosPorMarca("Toyota")).thenReturn(modelos);
+
+        mockMvc.perform(get("/autos/modelos")
+                        .param("marca", "Toyota"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0]").value("Corolla"))
+                .andExpect(jsonPath("$[1]").value("Camry"))
+                .andExpect(jsonPath("$[2]").value("RAV4"));
+    }
+
+    @Test
+    @WithMockUser(roles = "COMPRADOR")
+    void listarModelos_sinMarca_deberiaRetornar400() throws Exception {
+        mockMvc.perform(get("/autos/modelos"))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @WithMockUser(roles = "CONCESIONARIA")
+    void listarModelos_concesionaria_ok() throws Exception {
+        List<String> modelos = List.of("Focus", "Fiesta");
+        Mockito.when(autoService.obtenerModelosPorMarca("Ford")).thenReturn(modelos);
+
+        mockMvc.perform(get("/autos/modelos")
+                        .param("marca", "Ford"))
+                .andExpect(status().isOk());
+    }
 }
 

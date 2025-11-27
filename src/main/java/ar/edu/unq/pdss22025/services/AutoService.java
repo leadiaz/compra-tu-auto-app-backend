@@ -42,5 +42,21 @@ public class AutoService {
                 .orElseThrow(() -> new EntidadNoEncontradaException("Auto con ID " + id + " no encontrado"));
         autoRepository.delete(auto);
     }
+
+    /**
+     * Obtiene todas las marcas únicas de los autos.
+     */
+    @Transactional(readOnly = true)
+    public List<String> obtenerMarcas() {
+        return autoRepository.findDistinctMarcas();
+    }
+
+    /**
+     * Obtiene todos los modelos únicos de una marca específica.
+     */
+    @Transactional(readOnly = true)
+    public List<String> obtenerModelosPorMarca(String marca) {
+        return autoRepository.findDistinctModelosByMarca(marca);
+    }
 }
 

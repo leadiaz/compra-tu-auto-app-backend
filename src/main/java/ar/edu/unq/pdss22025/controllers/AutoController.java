@@ -6,6 +6,7 @@ import ar.edu.unq.pdss22025.models.dto.CrearAutoRequest;
 import ar.edu.unq.pdss22025.models.dto.ErrorResponse;
 import ar.edu.unq.pdss22025.services.AutoService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -75,6 +76,32 @@ public class AutoController {
     public ResponseEntity<Void> eliminarAuto(@PathVariable Long id) {
         autoService.eliminarAuto(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/marcas")
+    @PreAuthorize("hasAnyRole('COMPRADOR', 'CONCESIONARIA', 'ADMIN')")
+    @Operation(summary = "Listar marcas", description = "Devuelve todas las marcas únicas de autos disponibles, ordenadas alfabéticamente.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Listado de marcas")
+    })
+    public ResponseEntity<List<String>> listarMarcas() {
+        List<String> marcas = autoService.obtenerMarcas();
+        return ResponseEntity.ok(marcas);
+    }
+
+    @GetMapping("/modelos")
+    @PreAuthorize("hasAnyRole('COMPRADOR', 'CONCESIONARIA', 'ADMIN')")
+    @Operation(summary = "Listar modelos", description = "Devuelve todos los modelos únicos de una marca específica, ordenados alfabéticamente.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Listado de modelos"),
+            @ApiResponse(responseCode = "400", description = "Parámetro marca faltante",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    })
+    public ResponseEntity<List<String>> listarModelos(
+            @Parameter(description = "Marca para filtrar los modelos", required = true)
+            @RequestParam(value = "marca", required = true) String marca) {
+        List<String> modelos = autoService.obtenerModelosPorMarca(marca);
+        return ResponseEntity.ok(modelos);
     }
 
     private AutoResponse mapToResponse(Auto auto) {
