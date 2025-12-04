@@ -1,5 +1,6 @@
 package ar.edu.unq.pdss22025.services;
 
+import ar.edu.unq.pdss22025.exceptions.EntidadNoEncontradaException;
 import ar.edu.unq.pdss22025.models.Compra;
 import ar.edu.unq.pdss22025.models.OfertaAuto;
 import ar.edu.unq.pdss22025.models.usuario.Usuario;
@@ -32,10 +33,10 @@ public class CompraService {
     @Transactional
     public Compra crear(CrearCompraRequest request) {
         OfertaAuto oferta = ofertaAutoRepository.findById(request.getOfertaId())
-                .orElseThrow(() -> new IllegalArgumentException("Oferta no encontrada"));
+                .orElseThrow(() -> new EntidadNoEncontradaException("Oferta no encontrada"));
 
         Usuario comprador = usuarioRepository.findById(request.getCompradorId())
-                .orElseThrow(() -> new IllegalArgumentException("Comprador no encontrado"));
+                .orElseThrow(() -> new EntidadNoEncontradaException("Comprador no encontrado"));
 
         if (oferta.getStock() == null || oferta.getStock() <= 0) {
             throw new IllegalStateException("Oferta sin stock disponible");
