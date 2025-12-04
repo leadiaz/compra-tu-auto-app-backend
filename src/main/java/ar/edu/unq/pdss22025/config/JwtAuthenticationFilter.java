@@ -33,6 +33,24 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             @NonNull HttpServletResponse response,
             @NonNull FilterChain filterChain
     ) throws ServletException, IOException {
+        // Saltar el filtro para rutas públicas (Swagger, login, etc.)
+        // getServletPath() devuelve el path sin el context-path
+        String path = request.getServletPath();
+        // Si está vacío, usar getRequestURI() y remover el context-path si existe
+        if (path == null || path.isEmpty()) {
+            path = request.getRequestURI();
+            // Remover context-path si está presente
+            String contextPath = request.getContextPath();
+            if (contextPath != null && !contextPath.isEmpty() && path.startsWith(contextPath)) {
+                path = path.substring(contextPath.length());
+            }
+        }
+        String method = request.getMethod();
+        if (isPublicPath(path, method)) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
         final String authHeader = request.getHeader("Authorization");
         final String jwt;
         final String userEmail;
@@ -71,6 +89,20 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
 
         filterChain.doFilter(request, response);
+    }
+
+    private boolean isPublicPath(String path, String method) {
+        // Rutas de Swagger/OpenAPI
+        if (path.startsWith("/swagger-ui") ||
+            path.startsWith("/v3/api-docs") ||
+            path.startsWith("/swagger-resources") ||
+            path.startsWith("/webjars") ||
+            path.startsWith("/favicon.ico") ||
+            path.equals("/auth/login")) {
+            return true;
+        }
+        // POST /usuarios es público (registro)
+        return path.equals("/usuarios") && "POST".equalsIgnoreCase(method);
     }
 }
 

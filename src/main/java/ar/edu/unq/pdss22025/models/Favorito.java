@@ -2,7 +2,6 @@ package ar.edu.unq.pdss22025.models;
 
 import ar.edu.unq.pdss22025.models.usuario.Usuario;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
@@ -10,12 +9,18 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.OffsetDateTime;
 
+/**
+ * Entidad que representa una oferta de auto marcada como favorito por un usuario comprador.
+ * Un usuario puede tener múltiples favoritos, pero solo uno por oferta.
+ * Restricción única: (usuario_id, oferta_id)
+ */
 @Entity
 @Table(name = "favorito",
         uniqueConstraints = {
-                @UniqueConstraint(name = "uk_favorito_usuario", columnNames = {"usuario_id"})
+                @UniqueConstraint(name = "uk_favorito_usuario_oferta", columnNames = {"usuario_id", "oferta_id"})
         },
         indexes = {
+                @Index(name = "idx_favorito_usuario", columnList = "usuario_id"),
                 @Index(name = "idx_favorito_oferta", columnList = "oferta_id")
         }
 )
@@ -34,20 +39,18 @@ public class Favorito {
     @EqualsAndHashCode.Include
     private Long id;
 
-    @OneToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "usuario_id", nullable = false, unique = true, foreignKey = @ForeignKey(name = "fk_favorito_usuario"))
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "usuario_id", nullable = false, foreignKey = @ForeignKey(name = "fk_favorito_usuario"))
     private Usuario usuario;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "oferta_id", nullable = false, foreignKey = @ForeignKey(name = "fk_favorito_oferta"))
     private OfertaAuto oferta;
 
-    @NotNull
     @CreatedDate
     @Column(name = "created_at", nullable = false, updatable = false)
     private OffsetDateTime createdAt;
 
-    @NotNull
     @LastModifiedDate
     @Column(name = "updated_at", nullable = false)
     private OffsetDateTime updatedAt;

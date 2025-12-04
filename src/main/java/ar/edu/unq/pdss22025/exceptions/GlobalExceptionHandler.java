@@ -133,6 +133,76 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
     }
 
+    @ExceptionHandler(UsuarioNoValidoException.class)
+    public ResponseEntity<ErrorResponse> handleUsuarioNoValidoException(
+            UsuarioNoValidoException ex, HttpServletRequest request) {
+        
+        ErrorResponse errorResponse = new ErrorResponse(
+                HttpStatus.UNPROCESSABLE_ENTITY.value(),
+                HttpStatus.UNPROCESSABLE_ENTITY.getReasonPhrase(),
+                ex.getMessage() != null ? ex.getMessage() : "El usuario no es válido para esta operación",
+                request.getRequestURI()
+        );
+        
+        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(errorResponse);
+    }
+
+    @ExceptionHandler(FavoritoYaExisteException.class)
+    public ResponseEntity<ErrorResponse> handleFavoritoYaExisteException(
+            FavoritoYaExisteException ex, HttpServletRequest request) {
+        
+        ErrorResponse errorResponse = new ErrorResponse(
+                HttpStatus.CONFLICT.value(),
+                HttpStatus.CONFLICT.getReasonPhrase(),
+                ex.getMessage() != null ? ex.getMessage() : "El usuario ya tiene esta oferta marcada como favorito",
+                request.getRequestURI()
+        );
+        
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
+    }
+
+    @ExceptionHandler(ResenaYaExisteException.class)
+    public ResponseEntity<ErrorResponse> handleResenaYaExisteException(
+            ResenaYaExisteException ex, HttpServletRequest request) {
+        
+        ErrorResponse errorResponse = new ErrorResponse(
+                HttpStatus.CONFLICT.value(),
+                HttpStatus.CONFLICT.getReasonPhrase(),
+                ex.getMessage() != null ? ex.getMessage() : "El usuario ya tiene una reseña para este auto",
+                request.getRequestURI()
+        );
+        
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
+    }
+
+    @ExceptionHandler(PuntajeInvalidoException.class)
+    public ResponseEntity<ErrorResponse> handlePuntajeInvalidoException(
+            PuntajeInvalidoException ex, HttpServletRequest request) {
+        
+        ErrorResponse errorResponse = new ErrorResponse(
+                HttpStatus.BAD_REQUEST.value(),
+                HttpStatus.BAD_REQUEST.getReasonPhrase(),
+                ex.getMessage() != null ? ex.getMessage() : "El puntaje debe estar entre 0 y 10",
+                request.getRequestURI()
+        );
+        
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+    }
+
+    @ExceptionHandler(OfertaYaExisteException.class)
+    public ResponseEntity<ErrorResponse> handleOfertaYaExisteException(
+            OfertaYaExisteException ex, HttpServletRequest request) {
+        
+        ErrorResponse errorResponse = new ErrorResponse(
+                HttpStatus.CONFLICT.value(),
+                HttpStatus.CONFLICT.getReasonPhrase(),
+                ex.getMessage() != null ? ex.getMessage() : "Ya existe una oferta para esta concesionaria y este auto",
+                request.getRequestURI()
+        );
+        
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
+    }
+
     /**
      * Determina el código de estado HTTP para IllegalArgumentException.
      * Retorna 404 para argumentos inválidos.

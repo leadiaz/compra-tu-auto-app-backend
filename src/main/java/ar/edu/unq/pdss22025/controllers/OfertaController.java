@@ -1,9 +1,15 @@
 package ar.edu.unq.pdss22025.controllers;
 
+import ar.edu.unq.pdss22025.exceptions.CredencialesInvalidasException;
+import ar.edu.unq.pdss22025.models.dto.CrearOfertaRequest;
 import ar.edu.unq.pdss22025.models.dto.OfertaResponse;
+import ar.edu.unq.pdss22025.models.usuario.Usuario;
 import ar.edu.unq.pdss22025.services.OfertaService;
+import ar.edu.unq.pdss22025.services.UsuarioService;
 import ar.edu.unq.pdss22025.mapper.OfertaMapper;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
@@ -25,10 +31,38 @@ import ar.edu.unq.pdss22025.models.dto.ErrorResponse;
 public class OfertaController {
     private final OfertaService ofertaService;
     private final OfertaMapper ofertaMapper;
+    private final UsuarioService usuarioService;
 
-    public OfertaController(OfertaService ofertaService, OfertaMapper ofertaMapper) {
+    public OfertaController(OfertaService ofertaService, OfertaMapper ofertaMapper, UsuarioService usuarioService) {
         this.ofertaService = ofertaService;
         this.ofertaMapper = ofertaMapper;
+        this.usuarioService = usuarioService;
+    }
+
+    @PostMapping
+    @PreAuthorize("hasRole('CONCESIONARIA')")
+    @Operation(summary = "Crear oferta", description = "Crea una nueva oferta de auto. Solo usuarios CONCESIONARIA pueden crear ofertas para su propia concesionaria.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "Oferta creada exitosamente"),
+            @ApiResponse(responseCode = "400", description = "Solicitud inválida", content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "403", description = "No autorizado - Solo CONCESIONARIA puede crear ofertas", content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "404", description = "Auto no encontrado", content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "409", description = "Ya existe una oferta para esta concesionaria y este auto", content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "422", description = "El usuario no tiene una concesionaria asociada o no está activa", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    })
+    public ResponseEntity<OfertaResponse> crearOferta(@Valid @RequestBody CrearOfertaRequest request) {
+        Usuario usuario = usuarioService.obtenerUsuarioAutenticado()
+                .orElseThrow(() -> new CredencialesInvalidasException("Usuario no autenticado"));
+        
+        var oferta = ofertaService.crearOferta(
+                usuario,
+                request.getAutoId(),
+                request.getStock(),
+                request.getPrecioActual(),
+                request.getMoneda()
+        );
+        
+        return ResponseEntity.status(HttpStatus.CREATED).body(ofertaMapper.toResponse(oferta));
     }
 
     @GetMapping

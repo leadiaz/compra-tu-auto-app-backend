@@ -9,12 +9,41 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 import java.util.Optional;
 
-
 @Repository
 public interface FavoritoRepository extends JpaRepository<Favorito, Long> {
-    Optional<Favorito> findByUsuario(Usuario usuario);
-    boolean existsByUsuario(Usuario usuario);
+    
+    /**
+     * Busca todos los favoritos de un usuario.
+     */
+    List<Favorito> findByUsuarioId(Long usuarioId);
+    
+    /**
+     * Busca un favorito específico por usuario y oferta.
+     */
+    Optional<Favorito> findByUsuarioIdAndOfertaId(Long usuarioId, Long ofertaId);
+    
+    /**
+     * Verifica si existe un favorito para un usuario y oferta específicos.
+     */
+    boolean existsByUsuarioIdAndOfertaId(Long usuarioId, Long ofertaId);
+    
+    /**
+     * Busca todos los favoritos de un usuario (usando la entidad Usuario).
+     */
+    List<Favorito> findByUsuario(Usuario usuario);
+    
+    /**
+     * Busca todos los favoritos de una oferta.
+     */
     List<Favorito> findByOferta(OfertaAuto oferta);
-    Optional<Favorito> findByUsuarioId(Long usuarioId);
+    
+    /**
+     * Cuenta cuántos usuarios tienen una oferta como favorito.
+     */
     long countByOfertaId(Long ofertaId);
+    
+    /**
+     * Elimina un favorito por usuario y oferta.
+     */
+    void deleteByUsuarioIdAndOfertaId(Long usuarioId, Long ofertaId);
 }

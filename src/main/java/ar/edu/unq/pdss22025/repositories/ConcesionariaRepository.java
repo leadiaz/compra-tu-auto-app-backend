@@ -7,4 +7,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface ConcesionariaRepository extends JpaRepository<Concesionaria, Long> {
+    boolean existsByCuit(String cuit);
 }
