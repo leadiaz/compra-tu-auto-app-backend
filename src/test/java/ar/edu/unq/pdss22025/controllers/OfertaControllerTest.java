@@ -3,6 +3,7 @@ package ar.edu.unq.pdss22025.controllers;
 import ar.edu.unq.pdss22025.models.OfertaAuto;
 import ar.edu.unq.pdss22025.models.dto.OfertaResponse;
 import ar.edu.unq.pdss22025.services.OfertaService;
+import ar.edu.unq.pdss22025.services.UsuarioService;
 import ar.edu.unq.pdss22025.mapper.OfertaMapper;
 import ar.edu.unq.pdss22025.services.JwtService;
 import ar.edu.unq.pdss22025.services.UsuarioDetailsService;
@@ -29,6 +30,8 @@ class OfertaControllerTest {
     private OfertaService ofertaService;
     @MockitoBean
     private OfertaMapper ofertaMapper;
+    @MockitoBean
+    private UsuarioService usuarioService;
     @MockitoBean
     private JwtService jwtService;
     @MockitoBean
