@@ -189,6 +189,20 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
     }
 
+    @ExceptionHandler(OfertaYaExisteException.class)
+    public ResponseEntity<ErrorResponse> handleOfertaYaExisteException(
+            OfertaYaExisteException ex, HttpServletRequest request) {
+        
+        ErrorResponse errorResponse = new ErrorResponse(
+                HttpStatus.CONFLICT.value(),
+                HttpStatus.CONFLICT.getReasonPhrase(),
+                ex.getMessage() != null ? ex.getMessage() : "Ya existe una oferta para esta concesionaria y este auto",
+                request.getRequestURI()
+        );
+        
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
+    }
+
     /**
      * Determina el código de estado HTTP para IllegalArgumentException.
      * Retorna 404 para argumentos inválidos.
