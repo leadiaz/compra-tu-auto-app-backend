@@ -1,6 +1,5 @@
 package ar.edu.unq.pdss22025.services;
 
-import ar.edu.unq.pdss22025.exceptions.EntidadNoEncontradaException;
 import ar.edu.unq.pdss22025.exceptions.PuntajeInvalidoException;
 import ar.edu.unq.pdss22025.exceptions.ResenaYaExisteException;
 import ar.edu.unq.pdss22025.models.Auto;
