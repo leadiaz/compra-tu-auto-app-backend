@@ -115,4 +115,20 @@ public class OfertaController {
         List<OfertaResponse> response = ofertas.stream().map(ofertaMapper::toResponse).toList();
         return ResponseEntity.ok(response);
     }
+
+    @GetMapping("/todas")
+    @PreAuthorize("hasRole('COMPRADOR')")
+    @Operation(summary = "Listar todas las ofertas", description = "Devuelve todas las ofertas disponibles en el sistema. Solo usuarios COMPRADOR pueden acceder a este endpoint.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Listado de todas las ofertas disponibles"),
+            @ApiResponse(responseCode = "403", description = "No autorizado - Solo COMPRADOR puede acceder", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    })
+    public ResponseEntity<List<OfertaResponse>> getTodasLasOfertas() {
+        List<ar.edu.unq.pdss22025.models.OfertaAuto> ofertas = ofertaService.listarTodasLasOfertas();
+        if (ofertas == null || ofertas.isEmpty()) {
+            return ResponseEntity.ok(List.of()); // Retornar lista vacía si no hay ofertas
+        }
+        List<OfertaResponse> response = ofertas.stream().map(ofertaMapper::toResponse).toList();
+        return ResponseEntity.ok(response);
+    }
 }

@@ -39,6 +39,11 @@ public class OfertaService {
     }
 
     @Transactional(readOnly = true)
+    public List<OfertaAuto> listarTodasLasOfertas() {
+        return ofertaAutoRepository.findAll();
+    }
+
+    @Transactional(readOnly = true)
     public List<OfertaAuto> listarPorUsuarioConcesionaria(Usuario usuario) {
         // Validar que el usuario es de tipo CONCESIONARIA
         if (!usuario.esConcesionaria()) {
