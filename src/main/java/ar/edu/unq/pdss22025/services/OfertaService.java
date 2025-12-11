@@ -38,6 +38,24 @@ public class OfertaService {
         return ofertaAutoRepository.findByAutoId(autoId);
     }
 
+    @Transactional(readOnly = true)
+    public List<OfertaAuto> listarPorUsuarioConcesionaria(Usuario usuario) {
+        // Validar que el usuario es de tipo CONCESIONARIA
+        if (!usuario.esConcesionaria()) {
+            throw new UsuarioNoValidoException("Solo los usuarios de tipo CONCESIONARIA pueden listar sus ofertas");
+        }
+
+        UsuarioConcesionaria usuarioConcesionaria = (UsuarioConcesionaria) usuario;
+        
+        // Validar que el usuario tiene una concesionaria asociada
+        Concesionaria concesionaria = usuarioConcesionaria.getConcesionaria();
+        if (concesionaria == null) {
+            throw new UsuarioNoValidoException("El usuario CONCESIONARIA no tiene una concesionaria asociada");
+        }
+
+        return ofertaAutoRepository.findByConcesionariaId(concesionaria.getId());
+    }
+
     @Transactional
     public OfertaAuto crearOferta(Usuario usuario, Long autoId, Integer stock, BigDecimal precioActual, String moneda) {
         // Validar que el usuario es de tipo CONCESIONARIA
