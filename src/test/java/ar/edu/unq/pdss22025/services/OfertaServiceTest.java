@@ -161,5 +161,38 @@ class OfertaServiceTest {
         assertEquals("El usuario CONCESIONARIA no tiene una concesionaria asociada", exception.getMessage());
         verify(ofertaAutoRepository, never()).findByConcesionariaId(anyLong());
     }
+
+    @Test
+    @DisplayName("Listar todas las ofertas con ofertas disponibles - Debería retornar lista de ofertas")
+    void listarTodasLasOfertas_ConOfertas_DeberiaRetornarLista() {
+        // Arrange
+        List<OfertaAuto> ofertasEsperadas = List.of(oferta1, oferta2);
+        when(ofertaAutoRepository.findAll()).thenReturn(ofertasEsperadas);
+
+        // Act
+        List<OfertaAuto> resultado = ofertaService.listarTodasLasOfertas();
+
+        // Assert
+        assertNotNull(resultado);
+        assertEquals(2, resultado.size());
+        assertEquals(oferta1.getId(), resultado.get(0).getId());
+        assertEquals(oferta2.getId(), resultado.get(1).getId());
+        verify(ofertaAutoRepository, times(1)).findAll();
+    }
+
+    @Test
+    @DisplayName("Listar todas las ofertas sin ofertas - Debería retornar lista vacía")
+    void listarTodasLasOfertas_SinOfertas_DeberiaRetornarListaVacia() {
+        // Arrange
+        when(ofertaAutoRepository.findAll()).thenReturn(new ArrayList<>());
+
+        // Act
+        List<OfertaAuto> resultado = ofertaService.listarTodasLasOfertas();
+
+        // Assert
+        assertNotNull(resultado);
+        assertTrue(resultado.isEmpty());
+        verify(ofertaAutoRepository, times(1)).findAll();
+    }
 }
 
