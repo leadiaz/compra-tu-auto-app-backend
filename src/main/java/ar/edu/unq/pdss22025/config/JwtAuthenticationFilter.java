@@ -98,7 +98,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             path.startsWith("/swagger-resources") ||
             path.startsWith("/webjars") ||
             path.startsWith("/favicon.ico") ||
-            path.equals("/auth/login")) {
+            path.equals("/auth/login") ||
+            path.startsWith("/health")) {
             return true;
         }
         // POST /usuarios es público (registro)
