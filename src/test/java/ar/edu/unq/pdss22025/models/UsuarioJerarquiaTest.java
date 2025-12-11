@@ -55,4 +55,19 @@ class UsuarioJerarquiaTest {
         assertEquals("Buyer", comp.getApellido());
         assertTrue(comp.getActivo());
     }
+    @Test
+    @DisplayName("UsuarioComprador: getters y setters")
+    void usuarioCompradorGettersSettersDuplicado() {
+        UsuarioComprador comp = new UsuarioComprador();
+        comp.setEmail("u@u.com");
+        comp.setPassword("pwd");
+        comp.setNombre("User");
+        comp.setApellido("Buyer");
+        comp.setActivo(true);
+        assertEquals("u@u.com", comp.getEmail());
+        assertEquals("pwd", comp.getPassword());
+        assertEquals("User", comp.getNombre());
+        assertEquals("Buyer", comp.getApellido());
+        assertTrue(comp.getActivo());
+    }
 }
