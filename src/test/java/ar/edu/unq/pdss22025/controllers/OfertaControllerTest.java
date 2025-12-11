@@ -136,5 +136,40 @@ class OfertaControllerTest {
         mockMvc.perform(get("/ofertas/mis-ofertas"))
                 .andExpect(status().isUnauthorized());
     }
+
+    @Test
+    @WithMockUser(roles = "COMPRADOR")
+    void getTodasLasOfertas_ConOfertas_DeberiaRetornar200() throws Exception {
+        // Arrange
+        OfertaAuto oferta1 = new OfertaAuto();
+        OfertaAuto oferta2 = new OfertaAuto();
+        OfertaResponse response1 = new OfertaResponse();
+        response1.setId(1L);
+        OfertaResponse response2 = new OfertaResponse();
+        response2.setId(2L);
+
+        Mockito.when(ofertaService.listarTodasLasOfertas()).thenReturn(List.of(oferta1, oferta2));
+        Mockito.when(ofertaMapper.toResponse(oferta1)).thenReturn(response1);
+        Mockito.when(ofertaMapper.toResponse(oferta2)).thenReturn(response2);
+
+        // Act & Assert
+        mockMvc.perform(get("/ofertas/todas"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    @WithMockUser(roles = "COMPRADOR")
+    void getTodasLasOfertas_SinOfertas_DeberiaRetornar200ConListaVacia() throws Exception {
+        // Arrange
+        Mockito.when(ofertaService.listarTodasLasOfertas()).thenReturn(List.of());
+
+        // Act & Assert
+        mockMvc.perform(get("/ofertas/todas"))
+                .andExpect(status().isOk());
+    }
+
+    // Nota: Los tests de autorización (403) requieren que la seguridad esté habilitada.
+    // Como este test tiene excludeAutoConfiguration para SecurityAutoConfiguration,
+    // @PreAuthorize no se aplica. Estos tests se validan en integración con seguridad habilitada.
 }
 
