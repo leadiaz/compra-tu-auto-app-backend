@@ -5,6 +5,8 @@ import org.springframework.context.annotation.Configuration;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.servers.Server;
+import io.swagger.v3.oas.models.security.SecurityRequirement;
+import io.swagger.v3.oas.models.security.SecurityScheme;
 
 import java.util.List;
 
@@ -20,7 +22,17 @@ public class OpenApiConfig {
                         .description("Documentación OpenAPI para el backend Compra-tu-auto"))
                 .servers(List.of(
                         new Server().url("/api/1/compra-tu-auto").description("Servidor de desarrollo")
-                ));
+                ))
+                .addSecurityItem(new SecurityRequirement().addList("Bearer Authentication"))
+                .components(new io.swagger.v3.oas.models.Components()
+                        .addSecuritySchemes("Bearer Authentication", createAPIKeyScheme()));
+    }
+
+    private SecurityScheme createAPIKeyScheme() {
+        return new SecurityScheme()
+                .type(SecurityScheme.Type.HTTP)
+                .bearerFormat("JWT")
+                .scheme("bearer");
     }
 }
 
