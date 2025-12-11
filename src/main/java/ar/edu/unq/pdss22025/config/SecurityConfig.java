@@ -37,6 +37,7 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 // Rutas públicas
                 .requestMatchers("/auth/login").permitAll()
+                .requestMatchers("/health/**").permitAll() // Health check y ping
                 .requestMatchers(org.springframework.http.HttpMethod.POST, "/usuarios").permitAll() // POST para crear usuario
                 // Swagger/OpenAPI - permitir todas las variantes (rutas relativas al context-path)
                 .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/swagger-ui/index.html").permitAll()
