@@ -66,7 +66,6 @@ public class OfertaController {
     }
 
     @GetMapping
-    @PreAuthorize("hasAnyRole('COMPRADOR', 'CONCESIONARIA', 'ADMIN')")
     @Operation(summary = "Listar ofertas por concesionaria", description = "Devuelve las ofertas asociadas a una concesionaria dada.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Listado de ofertas"),
@@ -91,6 +90,28 @@ public class OfertaController {
     public ResponseEntity<List<OfertaResponse>> getOfertasByAuto(@Parameter(description = "ID del auto", required = true) @PathVariable("autoId") @NotNull Long autoId) {
         List<ar.edu.unq.pdss22025.models.OfertaAuto> ofertas = ofertaService.listarPorAuto(autoId);
         if (ofertas == null || ofertas.isEmpty()) return ResponseEntity.notFound().build();
+        List<OfertaResponse> response = ofertas.stream().map(ofertaMapper::toResponse).toList();
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/mis-ofertas")
+    @PreAuthorize("hasRole('CONCESIONARIA')")
+    @Operation(summary = "Listar mis ofertas", description = "Devuelve todas las ofertas publicadas por la concesionaria del usuario autenticado. Solo usuarios CONCESIONARIA pueden acceder a este endpoint.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Listado de ofertas de la concesionaria"),
+            @ApiResponse(responseCode = "403", description = "No autorizado - Solo CONCESIONARIA puede acceder", content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "404", description = "No se encontraron ofertas para la concesionaria",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "422", description = "El usuario no tiene una concesionaria asociada", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    })
+    public ResponseEntity<List<OfertaResponse>> getMisOfertas() {
+        Usuario usuario = usuarioService.obtenerUsuarioAutenticado()
+                .orElseThrow(() -> new CredencialesInvalidasException("Usuario no autenticado"));
+        
+        List<ar.edu.unq.pdss22025.models.OfertaAuto> ofertas = ofertaService.listarPorUsuarioConcesionaria(usuario);
+        if (ofertas == null || ofertas.isEmpty()) {
+            return ResponseEntity.ok(List.of()); // Retornar lista vacía en lugar de 404
+        }
         List<OfertaResponse> response = ofertas.stream().map(ofertaMapper::toResponse).toList();
         return ResponseEntity.ok(response);
     }

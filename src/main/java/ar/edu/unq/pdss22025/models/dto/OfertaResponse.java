@@ -17,4 +17,9 @@ public class OfertaResponse {
     private String descripcion;
     private String precio;
     private String estado;
+    private Integer stock;
+    private java.math.BigDecimal precioActual;
+    private String moneda;
+    private java.time.OffsetDateTime fechaCreacion;
+    private java.time.OffsetDateTime fechaActualizacion;
 }

@@ -15,7 +15,12 @@ public interface OfertaMapper {
             @Mapping(target = "titulo", ignore = true),
             @Mapping(target = "descripcion", ignore = true),
             @Mapping(source = "precioActual", target = "precio"),
-            @Mapping(target = "estado", ignore = true)
+            @Mapping(target = "estado", ignore = true),
+            @Mapping(source = "stock", target = "stock"),
+            @Mapping(source = "precioActual", target = "precioActual"),
+            @Mapping(source = "moneda", target = "moneda"),
+            @Mapping(source = "createdAt", target = "fechaCreacion"),
+            @Mapping(source = "updatedAt", target = "fechaActualizacion")
     })
     OfertaResponse toResponse(OfertaAuto entity);
 }
